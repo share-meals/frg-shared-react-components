@@ -87,30 +87,9 @@ Primary.args = {
 	    color: 'blue'
 	}
     ],
+    center: {
+	lat: 40.7127281,
+	lng: -74.0060152
+    },
     popupRenderer: PopupRenderer
 };
-
-
-/*
-
-	    <Layer
-		key={2}
-		zIndex={2}
-		id='soup_kitchens'
-		name='Soup Kitchens'
-		renderStyle={{
-		type: 'circle',
-		radius: 6,
-		    stroke: {
-			color: 'rgb(255, 0, 255)',
-			width: 2
-		    },
-		    fill: {
-			color: 'rgba(255, 0, 255, 0.2)'
-		    }
-		}}
-		geojson={soup_kitchens}
-		PopupRenderer={PopupRenderer}
-	    />
-
-*/
