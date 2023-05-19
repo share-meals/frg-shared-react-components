@@ -6,7 +6,6 @@ import {
     ComponentMeta
 } from '@storybook/react';
 import {
-    Layer,
     Map
 } from './Map';
 import {
@@ -26,7 +25,8 @@ import soup_kitchens from './data/soup_kitchens.json';
 
 const PopupRenderer = ({
     data
-}) => {
+}: any // todo: better typing
+) => {
     return (
 	<>
 	    <strong>{data?.name}</strong>

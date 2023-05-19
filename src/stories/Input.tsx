@@ -8,7 +8,8 @@ import {
 } from '@chakra-ui/react';
 
 type props_type = {
-    
+    label: string,
+    helper_text: string
 };
 
 export default function Input({
