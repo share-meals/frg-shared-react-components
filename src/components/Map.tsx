@@ -104,9 +104,17 @@ export const Map = ({
     const popupFeature = useMemo(() => {
 	return (
 	    <RFeature geometry={new Point(popup.coordinate)}>
-		<ROverlay className={popup.visible ? '' : 'hidden'}>
-		    <div id='triangle'></div>
-		    <Box className='popup'>
+		<ROverlay>
+		    <Box style={{
+			display: popup.visible ? 'inherit' : 'none',
+			width: 400,
+			border: '4px solid black',
+			borderRadius: '0.5rem',
+			padding: '1rem',
+			backgroundColor: 'white',
+			marginLeft: -200,
+			maxHeight: 250
+		    }}>
 		    <Flex>
 			<Box>
 			    {popupData.length > 1 &&
@@ -152,9 +160,10 @@ export const Map = ({
     return (
 	<>
 	    <HStack style={{height: '100%'}}>
-	    <div id='map_wrapper'>
+	    <div style={{width: 'calc(100% - 200px)', height: '100%'}}>
 		<RMap
-		    className='RMap'
+		    height='100%'
+		    width='100%'
 		    initial={view}
 		    view={[view, setView]}
 		    onClick={(event) => {
@@ -207,7 +216,7 @@ export const Map = ({
 		</RMap>
 		
 	    </div>
-	    <VStack align='start' id='controls_wrapper'>
+	    <VStack align='start' style={{width: 200, display: 'inline-block', height: '100%'}}>
 		{layerToggles}
 	    </VStack>
 	    </HStack>

@@ -1,5 +1,5 @@
 {
-  "name": "food-resource-guides-shared-react-components",
+  "name": "frg",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +10,19 @@
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   },
-  "dependencies": {
+    "files": [
+	"dist"
+    ],
+    "main": "./dist/frg.umd.js",
+    "module": "./dist/frg.es.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/frg.es.js",
+            "require": "./dist/frg.umd.js"
+        }
+    },
+    "dependencies": {
     "@chakra-ui/icons": "^2.0.19",
     "@chakra-ui/react": "^2.5.5",
     "@emotion/react": "^11.10.6",
@@ -19,8 +31,8 @@
     "ol": "^7.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "rlayers": "^1.4.9",
-    "react-hook-form": "^7.43.9"
+    "react-hook-form": "^7.43.9",
+    "rlayers": "^1.4.9"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",
@@ -36,6 +48,7 @@
     "@vitejs/plugin-react-swc": "^3.0.0",
     "babel-loader": "^8.3.0",
     "typescript": "^4.9.3",
-    "vite": "^4.2.0"
+    "vite": "^4.2.0",
+    "vite-plugin-dts": "^2.3.0"
   }
 }
