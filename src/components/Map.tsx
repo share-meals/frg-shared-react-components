@@ -36,7 +36,6 @@ import {
 } from 'rlayers';
 
 import 'ol/ol.css';
-import './Map.css';
 
 export const Map = ({
     center = {
@@ -95,7 +94,7 @@ export const Map = ({
 		{name}
 	    </Checkbox>
 	);
-    }, []);
+    }, [visibleLayers]);
     const [view, setView] = useState({
 	center: fromLonLat([center.lng, center.lat]),
 	zoom: zoom
