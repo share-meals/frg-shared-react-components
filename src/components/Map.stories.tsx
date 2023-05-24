@@ -23,52 +23,35 @@ import soup_kitchens from './data/soup_kitchens.json';
 
 
 
-const PopupRenderer = ({
+const Renderer = ({
     data
 }: any // todo: better typing
 ) => {
-    return (
-	<>
-	    <strong>{data?.name}</strong>
-	    <br />
-	    {data?.address}
-	    <br />
-	    {data?.city}, {data?.state} {data?.zip}
-		
-	</>
-    );
+    if(data === undefined){
+	return (
+	    <>
+		These are the instructions.
+	    </>
+	);
+    }else{
+	return (
+	    <>
+		<strong>{data?.name}</strong>
+		<br />
+		{data?.address}
+		<br />
+		{data?.city}, {data?.state} {data?.zip}
+	    </>
+	);
+    }
 }
-
-/*
-	    <Layer
-	    zIndex={1}
-		id='food_pantries'
-		name='Food Pantries'
-		renderStyle={{
-		type: 'circle',
-		radius: 6,
-		    stroke: {
-			color: 'blue',
-			width: 2
-		    },
-		    fill: {
-			color: 'rgba(0, 0, 255, 0.2)'
-		    }
-		}}
-		onClick={(event) => {console.log(event);}}
-		PopupRenderer={PopupRenderer}
-		geojson={food_pantries}
-		key={1}
-	    />
-
-*/
 
 const Template: ComponentStory<typeof Map> = (args) =>
     <ChakraProvider theme={theme}>
-    <div style={{height: '50vh'}}>
-	<Map {...args}>
-	</Map>
-    </div>
+	<div style={{height: '50vh'}}>
+	    <Map {...args}>
+	    </Map>
+	</div>
     </ChakraProvider>
 ;
 
@@ -91,5 +74,6 @@ Primary.args = {
 	lat: 40.7127281,
 	lng: -74.0060152
     },
-    popupRenderer: PopupRenderer
+    renderer: Renderer,
+    onClick: console.log
 };
