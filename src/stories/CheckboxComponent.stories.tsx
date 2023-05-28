@@ -53,3 +53,18 @@ Default.args = {
   helperText: 'Choose one or more options',
   rules: { required: 'At least one option must be selected' },
 };
+
+export const Disabled = Template.bind({});
+Disabled.args = {
+  groupLabel: 'Options',
+  name: 'options',
+  options: [
+    { label: 'Option 1', value: 'option1' },
+    { label: 'Option 2', value: 'option2' },
+    {label: 'Option 3', value: 'option3' },
+  ],
+  defaultValue: ['option1'],
+  helperText: 'Choose one or more options',
+  rules: { required: 'At least one option must be selected' },
+  disabled: true, 
+};
