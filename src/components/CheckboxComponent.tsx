@@ -30,6 +30,7 @@ export type CheckboxGroupProps = {
   helperText?: string;
   rules?: any;
   error?: FieldError | undefined;
+  onChange?: (value: string[]) => void;
 } & ChakraCheckboxProps;
 
 const CheckboxComponent: React.FC<CheckboxGroupProps> = ({
@@ -56,7 +57,7 @@ const CheckboxComponent: React.FC<CheckboxGroupProps> = ({
         rules={rules}
         defaultValue={defaultValue}
         render={({ field }) => (
-          <CheckboxGroup {...field} value={field.value || []}>
+          <CheckboxGroup {...field} value={field.value || []} onChange={props.onChange}>
             <Stack {...stackProps}>
               {options.map((option) => (
                 <ChakraCheckbox
