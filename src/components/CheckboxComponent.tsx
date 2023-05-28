@@ -59,7 +59,7 @@ const CheckboxComponent: React.FC<CheckboxGroupProps> = ({
         render={({ field }) => (
           <CheckboxGroup {...field} value={field.value || []} onChange={props.onChange}>
             <Stack {...stackProps}>
-              {options.map((option) => (
+              {options.map((option: CheckboxOption) => (
                 <ChakraCheckbox
                   key={option.value}
                   value={option.value}
