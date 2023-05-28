@@ -52,6 +52,7 @@ Default.args = {
   defaultValue: ['option1'],
   helperText: 'Choose one or more options',
   rules: { required: 'At least one option must be selected' },
+  onChange: (values: string) => console.log(values), 
 };
 
 export const Disabled = Template.bind({});
