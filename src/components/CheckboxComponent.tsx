@@ -15,6 +15,7 @@ import { Controller, Control, FieldError, FieldValues } from 'react-hook-form';
 interface CheckboxOption {
   label: string;
   value: string;
+  colorScheme?: string; 
 }
 
 export type CheckboxGroupProps = {
@@ -63,6 +64,7 @@ const CheckboxComponent: React.FC<CheckboxGroupProps> = ({
                   value={option.value}
                   isDisabled={disabled}
                   isInvalid={error === null}
+                  colorScheme={option.colorScheme}
                   {...props}
                 >
                   {option.label}
