@@ -1,35 +1,69 @@
+import {
+    ChakraProvider,
+    theme
+} from '@chakra-ui/react';
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
-import './App.css'
+import {
+    Map
+} from './components/Map';
+import food_pantries from './components/data/food_pantries.json';
+import soup_kitchens from './components/data/soup_kitchens.json';
+
+const Renderer = ({
+    data
+}: any // todo: better typing
+) => {
+    if(data === undefined){
+	return (
+	    <>
+		These are the instructions.
+	    </>
+	);
+    }else{
+	return (
+	    <>
+		<strong>{data?.name}</strong>
+		<br />
+		{data?.address}
+		<br />
+		{data?.city}, {data?.state} {data?.zip}
+	    </>
+	);
+    }
+}
+
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </div>
-  )
+    return (
+	<ChakraProvider theme={theme}>
+	    <div style={{height: '100vh', width: '100vw'}}>
+		<div style={{height: '50%', width: '50%', margin: 'auto'}}>
+		<Map
+		    layers={[
+			{
+			    name: 'Food Pantries',
+			    geojson: food_pantries,
+			    color: 'red'
+			},
+			{
+			    name: 'Soup Kitchens',
+			    geojson: soup_kitchens,
+			    color: 'blue'
+			}
+		    ]}
+		    center={{
+			lat: 40.7127281,
+			lng: -74.0060152
+		    }}
+		    renderer={Renderer}
+		    onClick={console.log}>
+		</Map>
+		</div>
+	    </div>
+	</ChakraProvider>
+    );
 }
 
 export default App

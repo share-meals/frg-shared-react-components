@@ -11,6 +11,7 @@ export default defineConfig({
 	    insertTypesEntry: true
 	})
     ],
+    /*
     build: {
 	lib: {
 	    entry: path.resolve(__dirname, 'src/components/index.tsx'),
@@ -34,4 +35,5 @@ export default defineConfig({
 	    }
 	}
     }
+    */
 })
