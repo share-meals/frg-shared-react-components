@@ -17,8 +17,6 @@ import {
     VStack,
 } from '@chakra-ui/react';
 import {
-    ChevronLeftIcon,
-    ChevronRightIcon,
     CloseIcon,
     HamburgerIcon
 } from '@chakra-ui/icons';
@@ -31,6 +29,7 @@ import {Point} from "ol/geom";
 import {
     RCircle,
     RFill,
+    RIcon,
     RStroke,
     RStyle,
 } from 'rlayers/style';
@@ -51,6 +50,46 @@ import {
 import './Map.css';
 import 'ol/ol.css';
 
+const generateStyle = ({color, type, icon}) => {
+    switch(type){
+	case 'Point':
+	    if(icon === undefined){
+		return (
+		    <RStyle>
+			<RCircle radius={3}>
+			    <RFill color={color} />
+			</RCircle>
+		    </RStyle>
+		);
+	    }else{
+		return (
+		    <RStyle>
+			<RIcon
+			src={icon.src}
+			scale={icon.scale}
+			/>
+		    </RStyle>
+		);
+	    }
+	    break;
+	case "LineString":
+	    return (
+		<RStyle>
+		    <RStroke color={color} width={3} />
+		</RStyle>
+	    );
+	    break;
+	default:
+	    return (
+		<RStyle>
+		    <RCircle radius={3}>
+			<RFill color={color} />
+		    </RCircle>
+		</RStyle>
+	    );
+    }
+}
+
 export const Map = ({
     center = {
 	lat: 0,
@@ -58,7 +97,7 @@ export const Map = ({
     },
     layers = [],
     zoom = 11,
-    renderer = () => {},
+    Renderer = () => {},
     onClick
 }: any // todo: better typing
 ) => {
@@ -67,9 +106,15 @@ export const Map = ({
 	return layers.map((
 	    layer: any // todo: better typing
 	) => {
-	    return new GeoJSON({
+	    const features = new GeoJSON({
 		featureProjection: 'EPSG:3857',
             }).readFeatures(layer.geojson);
+	    for(const feature of features){
+		feature.setProperties({
+		    layerName: layer.name
+		});
+	    }
+	    return features;
 	});
     }, []);
     const [visibleLayers, setVisibleLayers] = useState(Object.fromEntries(Object.values(layers).map((
@@ -80,7 +125,9 @@ export const Map = ({
 	    {
 		name: layer.name,
 		visible: true,
-		color: layer.color
+		color: layer.color,
+		icon: layer.icon,
+		type: layer.geojson.features[0].geometry.type
 	    }
 	]
     )));
@@ -91,7 +138,8 @@ export const Map = ({
 	) => 
 	    <Checkbox
 		defaultChecked
-		colorScheme={color}
+		colorScheme='whiteAlpha'
+		iconColor={color}
 		key={name}
 		onChange={(e) => {
 		    setVisibleLayers({
@@ -110,7 +158,24 @@ export const Map = ({
 	center: fromLonLat([center.lng, center.lat]),
 	zoom: zoom
     });
-    const [page, setPage] = useState(0);
+
+    const layersRendered = useMemo(() => {
+	return Object.values(visibleLayers).map((
+	    layer: any, // todo: better typing
+	    index: number
+	) =>
+	    <RLayerVector
+		features={features[index]}
+		visible={layer.visible}
+	    >
+		{generateStyle({
+		    color: layer.color,
+		    type: layer.type,
+		    icon: layer.icon
+		})}
+	    </RLayerVector>
+	)
+    }, [features, visibleLayers]);
     return (
 	<HStack h='100%' className='sm_frg'>
 	    <Box w='67%' h='100%'>
@@ -125,7 +190,6 @@ export const Map = ({
 			    // todo: don't ignore
 			    // @ts-ignore
 			    setPopupData(features.map((feature) => feature.getProperties()));
-			    setPage(0);
 			    event.map.getView().animate({center: event.coordinate});
 			    if(onClick){
 				const [lng, lat] = toLonLat(event.coordinate);
@@ -137,23 +201,7 @@ export const Map = ({
 		    projection='EPSG:3857'
 		    url='https://stamen-tiles.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png'
 		    />
-		    {
-			Object.values(visibleLayers).map((
-			    layer: any, // todo: better typing
-			    index: number
-			) =>
-			    <RLayerVector
-				features={features[index]}
-				visible={layer.visible}
-			    >
-				<RStyle>
-				    <RCircle radius={Math.round(view.zoom / 3)}>
-					<RFill color={layer.color} />
-				    </RCircle>
-				</RStyle>
-			    </RLayerVector>
-			)
-		    }
+		    {layersRendered}
 		    <RControl.RCustom className='layersControl'>
 			<Popover>
 			    <PopoverTrigger>
@@ -172,33 +220,10 @@ export const Map = ({
 			    </PopoverContent>
 			</Popover>
 		    </RControl.RCustom>
-		</RMap>
-		
+		</RMap>		
 	    </Box>
 	    <Box w='33%' h='100%'>
-		{popupData.length > 1 &&
-		 <Flex>
-		     <Spacer />
-		     <IconButton
-			 aria-label='previous page'
-			 size='xs'
-			 icon={<ChevronLeftIcon />}
-			 isDisabled={page === 0}
-			 onClick={() => {setPage(page - 1);}}
-		     />
-		     <Text ml='4' mr='4'>
-			 {page + 1} of {popupData.length}
-		     </Text>
-		     <IconButton
-			 aria-label='next page'
-			 size='xs'
-			 icon={<ChevronRightIcon />}
-			 isDisabled={page === popupData.length - 1}
-			 onClick={() => {setPage(page + 1);}}
-		     />
-		 </Flex>
-		}
-		{renderer({data: popupData[page]})}
+		<Renderer data={popupData} key={JSON.stringify(popupData)} />
 	    </Box>
 	</HStack>
     );
