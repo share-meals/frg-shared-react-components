@@ -33,7 +33,7 @@ import subway_lines from './data/subway_lines.json';
 import green_truck from './data/green_truck.png';
 import blue_truck from './data/blue_truck.png';
 
-const Renderer = ({data}) => {
+const Renderer = ({data}: any) => {
     const [page, setPage] = useState(0);
     if(data === undefined
        || data.length === 0){
