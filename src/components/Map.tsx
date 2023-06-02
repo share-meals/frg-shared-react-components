@@ -50,7 +50,7 @@ import {
 import './Map.css';
 import 'ol/ol.css';
 
-const generateStyle = ({color, type, icon}) => {
+const generateStyle = ({color, type, icon}: any) => {
     switch(type){
 	case 'Point':
 	    if(icon === undefined){
