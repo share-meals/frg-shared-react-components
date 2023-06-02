@@ -165,6 +165,7 @@ export const Map = ({
 	    index: number
 	) =>
 	    <RLayerVector
+		key={layer.name}
 		features={features[index]}
 		visible={layer.visible}
 	    >
