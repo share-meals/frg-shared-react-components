@@ -160,7 +160,7 @@ export const Map = ({
     });
 
     const layersRendered = useMemo(() => {
-	return Object.values(visibleLayers).map((
+	return (Object.values(visibleLayers).map((
 	    layer: any, // todo: better typing
 	    index: number
 	) =>
@@ -175,7 +175,7 @@ export const Map = ({
 		    icon: layer.icon
 		})}
 	    </RLayerVector>
-	)
+	)).reverse();
     }, [features, visibleLayers]);
     return (
 	<HStack h='100%' className='sm_frg'>
