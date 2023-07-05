@@ -1,41 +1,94 @@
 import {
     Box,
+    Button,
     Checkbox,
     CloseButton,
     Flex,
     HStack,
     IconButton,
+    Popover,
+    PopoverArrow,
+    PopoverBody,
+    PopoverCloseButton,
+    PopoverContent,
+    PopoverTrigger,
     Spacer,
-    VStack
+    Text,
+    VStack,
 } from '@chakra-ui/react';
 import {
-    ChevronLeftIcon,
-    ChevronRightIcon,
     CloseIcon,
+    HamburgerIcon
 } from '@chakra-ui/icons';
-import {fromLonLat} from 'ol/proj';
+import {
+    fromLonLat,
+    toLonLat
+} from 'ol/proj';
 import GeoJSON from 'ol/format/GeoJSON';
 import {Point} from "ol/geom";
 import {
     RCircle,
     RFill,
+    RIcon,
     RStroke,
     RStyle,
 } from 'rlayers/style';
 import {
-    ReactElement,
-    useMemo,
-    useState,
-} from 'react';
-import {
+    RControl,
     RFeature,
     RLayerTile,
     RLayerVector,
     RMap,
     ROverlay,
 } from 'rlayers';
+import {
+    ReactElement,
+    useMemo,
+    useState,
+} from 'react';
 
+import './Map.css';
 import 'ol/ol.css';
+
+const generateStyle = ({color, type, icon}: any) => {
+    switch(type){
+	case 'Point':
+	    if(icon === undefined){
+		return (
+		    <RStyle>
+			<RCircle radius={3}>
+			    <RFill color={color} />
+			</RCircle>
+		    </RStyle>
+		);
+	    }else{
+		return (
+		    <RStyle>
+			<RIcon
+			src={icon.src}
+			scale={icon.scale}
+			/>
+		    </RStyle>
+		);
+	    }
+	    break;
+	case "LineString":
+	    return (
+		<RStyle>
+		    <RStroke color={color} width={3} />
+		</RStyle>
+	    );
+	    break;
+	default:
+	    return (
+		<RStyle>
+		    <RCircle radius={3}>
+			<RFill color={color} />
+		    </RCircle>
+		</RStyle>
+	    );
+    }
+}
 
 export const Map = ({
     center = {
@@ -44,21 +97,24 @@ export const Map = ({
     },
     layers = [],
     zoom = 11,
-    popupRenderer = () => {},
+    Renderer = () => {},
+    onClick
 }: any // todo: better typing
 ) => {
-    const [popup, setPopup] = useState({
-	visible: false,
-	coordinate: [0, 0]
-    });
     const [popupData, setPopupData] = useState([]);
     const features = useMemo(() => {
 	return layers.map((
 	    layer: any // todo: better typing
 	) => {
-	    return new GeoJSON({
+	    const features = new GeoJSON({
 		featureProjection: 'EPSG:3857',
             }).readFeatures(layer.geojson);
+	    for(const feature of features){
+		feature.setProperties({
+		    layerName: layer.name
+		});
+	    }
+	    return features;
 	});
     }, []);
     const [visibleLayers, setVisibleLayers] = useState(Object.fromEntries(Object.values(layers).map((
@@ -69,7 +125,9 @@ export const Map = ({
 	    {
 		name: layer.name,
 		visible: true,
-		color: layer.color
+		color: layer.color,
+		icon: layer.icon,
+		type: layer.geojson.features[0].geometry.type
 	    }
 	]
     )));
@@ -80,7 +138,8 @@ export const Map = ({
 	) => 
 	    <Checkbox
 		defaultChecked
-		colorScheme={color}
+		colorScheme='whiteAlpha'
+		iconColor={color}
 		key={name}
 		onChange={(e) => {
 		    setVisibleLayers({
@@ -99,67 +158,28 @@ export const Map = ({
 	center: fromLonLat([center.lng, center.lat]),
 	zoom: zoom
     });
-    const [page, setPage] = useState(0);
-    const popupFeature = useMemo(() => {
-	return (
-	    <RFeature geometry={new Point(popup.coordinate)}>
-		<ROverlay>
-		    <Box style={{
-			display: popup.visible ? 'inherit' : 'none',
-			width: 400,
-			border: '4px solid black',
-			borderRadius: '0.5rem',
-			padding: '1rem',
-			backgroundColor: 'white',
-			marginLeft: -200,
-			maxHeight: 250
-		    }}>
-		    <Flex>
-			<Box>
-			    {popupData.length > 1 &&
-			     <>
-				 <IconButton
-				 aria-label='previous page'
-				 size='xs'
-				 icon={<ChevronLeftIcon />}
-				 isDisabled={page === 0}
-				 onClick={() => {setPage(page - 1);}}
-			     />
-			     {page + 1} of {popupData.length}
-			     <IconButton
-				 aria-label='next page'
-				 size='xs'
-				 icon={<ChevronRightIcon />}
-				 isDisabled={page === popupData.length - 1}
-				 onClick={() => {setPage(page + 1);}}
-			     />
-			    </>
-			    }
-			</Box>
-			<Spacer />
-			<Box>
-			    <IconButton
-				aria-label='close popup'
-				icon={<CloseIcon />}
-				size='xs'
-				onClick={() => {
-				setPopup({
-				    coordinate: [0, 0],
-				    visible: false
-				});
-			}} />
-			</Box>
-		    </Flex>
-		    {popupRenderer({data: popupData[page]})}
-		    </Box>
-		</ROverlay>
-	    </RFeature>
-	);
-    }, [JSON.stringify(popup), JSON.stringify(popupData), page])
+
+    const layersRendered = useMemo(() => {
+	return (Object.values(visibleLayers).map((
+	    layer: any, // todo: better typing
+	    index: number
+	) =>
+	    <RLayerVector
+		key={layer.name}
+		features={features[index]}
+		visible={layer.visible}
+	    >
+		{generateStyle({
+		    color: layer.color,
+		    type: layer.type,
+		    icon: layer.icon
+		})}
+	    </RLayerVector>
+	)).reverse();
+    }, [features, visibleLayers]);
     return (
-	<>
-	    <HStack style={{height: '100%'}}>
-	    <div style={{width: 'calc(100% - 200px)', height: '100%'}}>
+	<HStack h='100%' className='sm_frg'>
+	    <Box w='67%' h='100%'>
 		<RMap
 		    height='100%'
 		    width='100%'
@@ -168,57 +188,44 @@ export const Map = ({
 		    onClick={(event) => {
 			const features = event.map.getFeaturesAtPixel(event.pixel);
 			if(features.length > 0){
-			    setPopup({
-				visible: true,
-				coordinate: event.coordinate
-			    });
 			    // todo: don't ignore
 			    // @ts-ignore
 			    setPopupData(features.map((feature) => feature.getProperties()));
-			    setPage(0);
-			    setView({
-				// todo: don't ignore
-				// @ts-ignore
-				center: features[0].getGeometry()?.getCoordinates(),
-				zoom: view.zoom
-			    });
+			    event.map.getView().animate({center: event.coordinate});
+			    if(onClick){
+				const [lng, lat] = toLonLat(event.coordinate);
+				onClick({lng, lat});
+			    }
 			}
-		    }}
-		>
+		    }}>
 		    <RLayerTile
-			projection='EPSG:3857'
-			url='https://stamen-tiles.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png'
+		    projection='EPSG:3857'
+		    url='https://stamen-tiles.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png'
 		    />
-		    {
-			Object.values(visibleLayers).map((
-			    layer: any, // todo: better typing
-			    index: number
-			) =>
-			    <RLayerVector
-				features={features[index]}
-				visible={layer.visible}
-			    >
-			    <RStyle>
-				<RCircle radius={Math.round(view.zoom / 3)}>
-				    <RFill color={layer.color} />
-				</RCircle>
-			    </RStyle>
-			</RLayerVector>
-			)
-		    }
-		    <RLayerVector>
-			<RStyle>
-			    
-			</RStyle>
-			{popupFeature}
-		    </RLayerVector>
-		</RMap>
-		
-	    </div>
-	    <VStack align='start' style={{width: 200, display: 'inline-block', height: '100%'}}>
-		{layerToggles}
-	    </VStack>
-	    </HStack>
-	</>
+		    {layersRendered}
+		    <RControl.RCustom className='layersControl'>
+			<Popover>
+			    <PopoverTrigger>
+				<button>
+				    <HamburgerIcon />
+				</button>
+			    </PopoverTrigger>
+			    <PopoverContent p='0'>
+				<PopoverArrow />
+				<PopoverCloseButton />
+				<PopoverBody>
+				    <VStack align='start'>
+					{layerToggles}
+				    </VStack>
+				</PopoverBody>
+			    </PopoverContent>
+			</Popover>
+		    </RControl.RCustom>
+		</RMap>		
+	    </Box>
+	    <Box w='33%' h='100%'>
+		<Renderer data={popupData} key={JSON.stringify(popupData)} />
+	    </Box>
+	</HStack>
     );
 }
