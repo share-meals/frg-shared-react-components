@@ -28,6 +28,7 @@ export type RadioGroupProps = {
   helperText?: string;
   error?: FieldError;
   validationRules?: any;
+  direction?: 'row' | 'column';
 } & ChakraRadioProps;
 
 const RadioComponent: React.FC<RadioGroupProps> = ({
@@ -42,6 +43,7 @@ const RadioComponent: React.FC<RadioGroupProps> = ({
   helperText,
   error,
   validationRules,
+  direction = 'column',
   ...props
 }) => {
   return (
@@ -54,7 +56,7 @@ const RadioComponent: React.FC<RadioGroupProps> = ({
         rules={validationRules}
         render={({ field }) => (
           <RadioGroup {...field} value={field.value || ''}>
-            <Stack {...stackProps}>
+            <Stack direction={direction} {...stackProps}>
               {options.map((option) => (
                 <ChakraRadio
                   key={option.value}

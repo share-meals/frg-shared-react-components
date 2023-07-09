@@ -55,3 +55,68 @@ Default.args = {
     required: 'This field is required',
   },
 };
+
+export const WithoutTitle = Template.bind({});
+WithoutTitle.args = {
+  name: 'options',
+  options: [
+    { label: 'Option 1', value: 'option1' },
+    { label: 'Option 2', value: 'option2' },
+    { label: 'Option 3', value: 'option3' },
+  ],
+  defaultValue: 'option1',
+  helperText: 'This is helper text',
+  validationRules: {
+    required: 'This field is required',
+  },
+};
+
+export const WithLabel = Template.bind({});
+WithLabel.args = {
+  groupLabel: 'Options',
+  name: 'options',
+  options: [
+    { label: 'Option 1', value: 'option1' },
+    { label: 'Option 2', value: 'option2' },
+    { label: 'Option 3', value: 'option3' },
+  ],
+  defaultValue: 'option1',
+};
+
+export const WithoutLabel = Template.bind({});
+WithoutLabel.args = {
+  name: 'options',
+  options: [
+    { label: 'Option 1', value: 'option1' },
+    { label: 'Option 2', value: 'option2' },
+    { label: 'Option 3', value: 'option3' },
+  ],
+  defaultValue: 'option1',
+};
+
+
+export const Horizontal = Template.bind({});
+Horizontal.args = {
+  groupLabel: 'Options',
+  name: 'options',
+  options: [
+    { label: 'Option 1', value: 'option1' },
+    { label: 'Option 2', value: 'option2' },
+    { label: 'Option 3', value: 'option3' },
+  ],
+  defaultValue: 'option1',
+  direction: 'row',
+};
+
+export const Vertical = Template.bind({});
+Vertical.args = {
+  groupLabel: 'Options',
+  name: 'options',
+  options: [
+    { label: 'Option 1', value: 'option1' },
+    { label: 'Option 2', value: 'option2' },
+    { label: 'Option 3', value: 'option3' },
+  ],
+  defaultValue: 'option1',
+  direction: 'column',
+};
