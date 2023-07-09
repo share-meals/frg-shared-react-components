@@ -15,6 +15,7 @@ import { Controller, Control, FieldError, FieldValues } from 'react-hook-form';
 interface CheckboxOption {
   label: string;
   value: string;
+  colorScheme?: string; 
 }
 
 export type CheckboxGroupProps = {
@@ -29,6 +30,7 @@ export type CheckboxGroupProps = {
   helperText?: string;
   rules?: any;
   error?: FieldError | undefined;
+  onChange?: (value: string[]) => void;
 } & ChakraCheckboxProps;
 
 const CheckboxComponent: React.FC<CheckboxGroupProps> = ({
@@ -55,14 +57,15 @@ const CheckboxComponent: React.FC<CheckboxGroupProps> = ({
         rules={rules}
         defaultValue={defaultValue}
         render={({ field }) => (
-          <CheckboxGroup {...field} value={field.value || []}>
+          <CheckboxGroup {...field} value={field.value || []} onChange={props.onChange}>
             <Stack {...stackProps}>
-              {options.map((option) => (
+              {options.map((option: CheckboxOption) => (
                 <ChakraCheckbox
                   key={option.value}
                   value={option.value}
                   isDisabled={disabled}
                   isInvalid={error === null}
+                  colorScheme={option.colorScheme}
                   {...props}
                 >
                   {option.label}

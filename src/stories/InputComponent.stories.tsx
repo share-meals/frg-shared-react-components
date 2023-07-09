@@ -57,8 +57,17 @@ const Template: Story<InputComponentProps> = (args) => {
   );
 };
 
-export const Default = Template.bind({});
-Default.args = {
+export const DefaultWithoutLabel = Template.bind({});
+DefaultWithoutLabel.args = {
+  type: "text",
+  size: "md",
+  variant: "outline",
+  placeholder: "Enter text",
+  name: "defaultInput"
+};
+
+export const DefaultWithLabel = Template.bind({});
+DefaultWithLabel.args = {
   type: "text",
   size: "md",
   variant: "outline",
@@ -75,6 +84,66 @@ PasswordInput.args = {
   label: "Password",
   placeholder: "Enter password",
   name: "passwordInput",
+};
+
+export const TextInput = Template.bind({});
+TextInput.args = {
+  type: "text",
+  size: "md",
+  variant: "outline",
+  label: "text",
+  placeholder: "Enter text",
+  name: "textInput",
+};
+
+export const DatetimeInput = Template.bind({});
+DatetimeInput.args = {
+  type: "datetime",
+  size: "md",
+  variant: "outline",
+  label: "datetime",
+  placeholder: "Enter datetime",
+  name: "datetimeInput",
+};
+
+export const SearchInput = Template.bind({});
+SearchInput.args = {
+  type: "search",
+  size: "md",
+  variant: "outline",
+  label: "search",
+  placeholder: "Enter search",
+  name: "searchInput",
+};
+
+export const FileInput = Template.bind({});
+FileInput.args = {
+  type: "file",
+  size: "md",
+  variant: "outline",
+  label: "file",
+  placeholder: "Enter file",
+  name: "fileInput",
+};
+
+export const EmailInput = Template.bind({});
+EmailInput.args = {
+  type: "email",
+  size: "md",
+  variant: "outline",
+  label: "email",
+  placeholder: "Enter email",
+  name: "emailInput",
+};
+
+export const NumberInput = Template.bind({});
+NumberInput.args = {
+  type: "number",
+  size: "md",
+  variant: "outline",
+  label: "number",
+  placeholder: "Enter number",
+  name: "numberInput",
 };
 
 export const ControlledInput = () => {
@@ -107,7 +176,6 @@ export const ControlledInput = () => {
   );
 };
 
-
 export const SizedInputs = () => {
   const { control } = useForm();
   return (
@@ -133,6 +201,16 @@ export const Variants = () => {
 };
 
 export const InputsWithAddons = () => {
+  const { control } = useForm();
+  return (
+    <Box>
+      <Template control={control} {...{ leftAddon: "https://", rightAddon: ".com", placeholder: "Enter your website", mb: "4", name: "website" }} />
+      <Template control={control} {...{ leftAddon: "$", rightAddon: ".00", placeholder: "Enter the amount", type: "number", mb: "4", name: "amount" }} />
+    </Box>
+  );
+};
+
+export const InputsWithAddonsNoLabels = () => {
   const { control } = useForm();
   return (
     <Box>

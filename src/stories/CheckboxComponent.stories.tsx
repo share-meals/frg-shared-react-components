@@ -52,4 +52,35 @@ Default.args = {
   defaultValue: ['option1'],
   helperText: 'Choose one or more options',
   rules: { required: 'At least one option must be selected' },
+  onChange: (values: string) => console.log(values), 
 };
+
+export const Disabled = Template.bind({});
+Disabled.args = {
+  groupLabel: 'Options',
+  name: 'options',
+  options: [
+    { label: 'Option 1', value: 'option1' },
+    { label: 'Option 2', value: 'option2' },
+    {label: 'Option 3', value: 'option3' },
+  ],
+  defaultValue: ['option1'],
+  helperText: 'Choose one or more options',
+  rules: { required: 'At least one option must be selected' },
+  disabled: true, 
+};
+
+export const Colored = Template.bind({});
+Colored.args = {
+  groupLabel: 'Options',
+  name: 'options',
+  options: [
+    { label: 'Option 1', value: 'option1', colorScheme: 'red' },
+    { label: 'Option 2', value: 'option2', colorScheme: 'green' },
+    { label: 'Option 3', value: 'option3', colorScheme: 'blue' },
+  ],
+  defaultValue: ['option1'],
+  helperText: 'Choose one or more options',
+  rules: { required: 'At least one option must be selected' },
+};
+
