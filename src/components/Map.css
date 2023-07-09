@@ -2,3 +2,11 @@
     top: 8px;
     right: 8px;
 }
+
+.sm_frg .ol-control{
+    background-color: green;
+}
+
+.sm_frg .ol-control button{
+    margin: 4px;
+}
