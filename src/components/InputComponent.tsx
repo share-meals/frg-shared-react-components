@@ -19,8 +19,8 @@ import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { Control, Controller, FieldError } from "react-hook-form";
 
 export interface InputComponentProps extends FormControlProps {
-    control: Control;
-    disabled: boolean;
+    control: Control<any, object>;
+    disabled?: boolean;
     name: string;
     error?: FieldError;
     inputProps?: InputProps;
@@ -43,12 +43,13 @@ export interface InputComponentProps extends FormControlProps {
 
 const InputComponent: React.FC<InputComponentProps> = ({
     control,
-    disabled,
+    disabled = false,
     name,
     error,
     groupProps,
     leftAddon,
     leftAddonProps,
+    placeholder,
     rightAddon,
     rightAddonProps,
     leftElement,
@@ -89,6 +90,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
 		    {...field}
 		    {...{
 			disabled,
+			placeholder,
 			variant
 		    }}
                             type={type === "password" && !showPassword ? "password" : type}

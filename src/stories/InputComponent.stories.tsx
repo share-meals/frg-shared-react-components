@@ -95,7 +95,6 @@ export const ControlledInput = () => {
           <InputComponent
             control={control}
             type="text"
-            value={value}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)}
             placeholder="Controlled input"
             label="Controlled Input"

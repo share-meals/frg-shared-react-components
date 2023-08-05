@@ -1,84 +1,164 @@
-import InputComponent from './InputComponent';
 import {
     useNavigation,
 } from './useNavigation';
-import {useForm} from 'react-hook-form';
 import {
-    useEffect,
-    useState
-} from 'react';
+    Route,
+    RouteLeg,
+    RouteStep
+} from 'osrm';
+
 import {
+    Box,
     Button,
-    Divider,
-    Text
+    Flex,
+    Icon,
+    IconButton,
+    ListItem,
+    Menu,
+    MenuButton,
+    MenuItem,
+    MenuList,
+    OrderedList,
+    Select,
+    Spacer,
+    Text,
+    useClipboard
 } from '@chakra-ui/react';
-import { Polyline } from 'ol/format';
+import {
+    MdDirectionsBike,
+    MdDirectionsCar,
+    MdDirectionsWalk
+} from 'react-icons/md';
+import {GeocoderInput} from './GeocoderInput';
+import ILatLng from './interfaces/latlng';
+import {Polyline} from 'ol/format';
+// @ts-ignore
+import osrmTextInstructions from 'osrm-text-instructions';
+import {useState} from 'react';
+import {LineString} from "ol/geom";
 
 const polyReader = new Polyline();
 
-const parseRoute = (routes) => {
-  if (routes && routes.length > 0) {
-    const f = polyReader.readFeature(routes[0].geometry);
-    f.getGeometry().transform("EPSG:4326", "EPSG:3857");
+const parseRoute = (route: Route): LineString => {
+    const f = polyReader.readFeature(route.geometry);
+    f.getGeometry()?.transform("EPSG:4326", "EPSG:3857");
     return f.getGeometry() as LineString;
-  }
-  return null;
 }
 
-export const Navigation = ({
-    geocoder_url,
-    router_url
-}) => {
-    const {control, handleSubmit} = useForm({
-	defaultValues: {
-	    startAddress: ''
-	}
-    });
-    const {startAddress, setStartAddress, startCoords, setStartCoords, endAddress, endCoords, setRoute} = useNavigation();
-    const [loading, setLoading] = useState(false);
-    const onSubmit = handleSubmit(async (data) => {
-	setLoading(true);
-	// todo: error checking
-	const geocoder_response = await fetch(`${geocoder_url}?q=${data.startAddress}&limit=1&format=json`);
-	const geocoder_json = await geocoder_response.json();
-	const coords = {lat: geocoder_json[0].lat, lng: geocoder_json[0].lon};
+const WalkIcon = <Icon as={MdDirectionsWalk} />;
+const DriveIcon = <Icon as={MdDirectionsCar} />;
+const BikeIcon = <Icon as={MdDirectionsBike} />;
 
-	const routing_response = await fetch(`${router_url}/route/v1/driving/${coords.lng},${coords.lat};${endCoords.lng},${endCoords.lat}?steps=true&annotations=true`);
-	const routing_json = await routing_response.json();
-	const line = parseRoute(routing_json.routes);
-	setRoute(line);
-	setStartAddress(data.startAddress);
-	setStartCoords(coords);
-	setLoading(false);
-    });
+export const Navigation = ({
+    geocoderUrl,
+    routerUrl,
+    osrmVersion,
+    language = 'en'
+}: {
+    geocoderUrl: string,
+    routerUrl: string,
+    osrmVersion: string,
+    language?: string
+}) => {
+    const [directionsProfile, setDirectionsProfile] = useState('walking');
+    const getTextDirections = osrmTextInstructions(osrmVersion);
+    const {onCopy, value: clipboardValue, setValue: setClipboardValue, hasCopied} = useClipboard("");
+    const [distance, setDistance] = useState<string | null>(null);
+    const [duration, setDuration] = useState<string | null>(null);
+    const {
+	startAddress,
+	setStartAddress,
+	startCoords,
+	setStartCoords,
+	endAddress,
+	endCoords,
+	setRoute,
+	instructions,
+	setInstructions
+    } = useNavigation();
     return (
 	<>
-	    <Divider my='4' />
-	    <Text textAlign='center'>
+	    <Flex align='center'>
+	    <Text mr='4'>
 		Get Directions
 	    </Text>
-	    <form onSubmit={onSubmit}>
-		<InputComponent
-		control={control}
-		disabled={loading}
-		variant={loading ? 'filled' : 'outline'}
-		label='Start Address'
-		name='startAddress'
-		type='text'
-		    rightElement={
-			<Button
-			    colorScheme='green'
-			    isLoading={loading}
-			    type='submit'>
-			    Go
-			</Button>
-			
-		    }
+	    <Menu>
+		<MenuButton
+		as={IconButton}
+		icon={directionsProfile == 'walking' ? WalkIcon
+		    : directionsProfile == 'biking' ? BikeIcon
+		    : DriveIcon}
+		variant='ghost'
 		/>
-	    </form>
+		<MenuList>
+		    <MenuItem icon={WalkIcon} onClick={() => setDirectionsProfile('walking')}>
+			Walking
+		    </MenuItem>
+		    <MenuItem icon={BikeIcon} onClick={() => setDirectionsProfile('biking')}>
+			Biking
+		    </MenuItem>
+		    <MenuItem icon={DriveIcon} onClick={() => setDirectionsProfile('driving')}>
+			Driving
+		    </MenuItem>
+		</MenuList>
+	    </Menu>
+	    </Flex>
+	    <GeocoderInput
+		placeholder='Starting from ...'
+		onGeocode={async (coordinates: ILatLng) => {
+		    const coords = {lat: coordinates.lat, lng: coordinates.lng};
+		    const routingResponse = await fetch(`${routerUrl}/route/v1/${directionsProfile}/${coords.lng},${coords.lat};${endCoords?.lng},${endCoords?.lat}?steps=true&annotations=true`);
+		    const routingJson = await routingResponse.json();
+		    if(routingJson.routes.length > 0){
+			const route = routingJson.routes[0];
+			const distance: string = `${Math.round(route.distance * 10 * 0.000621371) / 10}miles`;
+			const duration: string = `${Math.round(route.duration * 10 / 60) / 10}min`;
+			setDistance(distance);
+			setDuration(duration);
+			const instructionsArray: string[] = route.legs.map((leg: RouteLeg) => {
+			    return leg.steps.map((step: RouteStep) => {
+				return getTextDirections.compile(language, step);
+			    });
+			}).flat();
+			setInstructions!(instructionsArray);
+			
+			const textInstructions = instructionsArray.map((instruction: string, index: number) => `${index + 1}. ${instruction}`).join('\n');
+			const clipboardText = `${directionsProfile} directions from ${startAddress} to ${endAddress}
+${duration} ${distance}
+
+${textInstructions}`;
+			setClipboardValue(clipboardText);
+			const line: LineString = parseRoute(route);
+			setRoute!(line);
+			//setStartAddress(data.startAddress);
+			//setStartCoords(coords);
+		    }else{
+			// todo: no route found
+		    }
+		}} />
+	    {
+		instructions !== null &&
+		<>
+		    <Box mt={8}>
+			<Flex align='center'>
+			    <Text>
+				{duration} {distance}
+			    </Text>
+			    <Spacer />
+			    <Button
+				isDisabled={hasCopied}
+				onClick={onCopy}
+				size='xs'
+			    >
+				{hasCopied ? 'copied!' : 'copy'}
+			    </Button>
+			</Flex>
+			<OrderedList>
+			    {instructions.map((instruction: string, index: number) => <ListItem key={index}>{instruction}</ListItem>)}
+			</OrderedList>
+		    </Box>
+		</>
+	    }
 	</>
-    );
-    return (
-	<PromptStartAddress {...{geocoder_url}} />
     );
 }
