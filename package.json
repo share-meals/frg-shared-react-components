@@ -1,57 +1,71 @@
 {
-    "name": "frg",
-    "private": true,
-    "version": "0.0.0",
-    "type": "module",
-    "scripts": {
-	"dev": "vite",
-	"build": "tsc && vite build",
-	"preview": "vite preview",
-	"storybook": "start-storybook -p 6006",
-	"build-storybook": "build-storybook"
-    },
-    "files": [
-	"dist"
-    ],
-    "main": "./dist/frg.umd.js",
-    "module": "./dist/frg.es.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-	".": {
-	    "import": "./dist/frg.es.js",
-	    "require": "./dist/frg.umd.js"
-	}
-    },
-    "dependencies": {
-	"ol": "^7.3.0",
-	"rlayers": "^1.4.9"
-    },
-    "peerDependencies": {
-	"@chakra-ui/icons": "^2.0.19",
-	"@chakra-ui/react": "^2.5.5",
-	"@emotion/react": "^11.10.6",
-	"@emotion/styled": "^11.10.6",
-	"framer-motion": "^10.10.0",
-	"react-hook-form": "^7.43.9",
-	"react-dom": "^18.2.0",
-	"react": "^18.2.0"
-    },
-    "devDependencies": {
-	"@babel/core": "^7.21.4",
-	"@storybook/addon-actions": "^6.5.16",
-	"@storybook/addon-essentials": "^6.5.16",
-	"@storybook/addon-interactions": "^6.5.16",
-	"@storybook/addon-links": "^6.5.16",
-	"@storybook/builder-vite": "^0.4.2",
-	"@storybook/react": "^6.5.16",
-	"@storybook/testing-library": "^0.0.13",
-	"@types/react": "^18.0.28",
-	"@types/react-dom": "^18.0.11",
-	"@vitejs/plugin-react-swc": "^3.0.0",
-	"babel-loader": "^8.3.0",
-	"typescript": "^4.9.3",
-	"vite": "^4.2.0",
-	"vite-plugin-css-injected-by-js": "^3.1.1",
-	"vite-plugin-dts": "^2.3.0"
+  "name": "frg",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "install-peers": "install-peers -f"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/frg.umd.js",
+  "module": "./dist/frg.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/frg.es.js",
+      "require": "./dist/frg.umd.js"
     }
+  },
+  "dependencies": {
+    "@types/osrm": "^5.25.2",
+    "ol": "^7.3.0",
+    "osrm-text-instructions": "^0.14.1-beta.3",
+    "react-icons": "^4.10.1",
+    "rlayers": "^2.0.0-beta.0"
+  },
+  "peerDependencies": {
+    "@chakra-ui/icons": "^2.0.19",
+    "@chakra-ui/react": "^2.5.5",
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
+    "framer-motion": "^10.10.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.43.9"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.21.4",
+    "@storybook/addon-actions": "^7.2.1",
+    "@storybook/addon-essentials": "^7.2.1",
+    "@storybook/addon-interactions": "^7.2.1",
+    "@storybook/addon-links": "^7.2.1",
+    "@storybook/addon-mdx-gfm": "^7.2.1",
+    "@storybook/react": "^7.2.1",
+    "@storybook/react-vite": "^7.2.1",
+    "@storybook/testing-library": "^0.2.0",
+    "@types/react": "^18.0.28",
+    "@types/react-dom": "^18.0.11",
+    "@types/react-geocode": "^0.2.1",
+    "@vitejs/plugin-react-swc": "^3.0.0",
+    "babel-loader": "^8.3.0",
+    "chakra-ui-markdown-renderer": "^4.1.0",
+    "install-peers-cli": "^2.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-geocode": "^0.2.3",
+    "react-markdown": "^8.0.7",
+    "storybook": "^7.2.1",
+    "typescript": "^4.9.3",
+    "vite": "^4.4.2",
+    "vite-plugin-css-injected-by-js": "^3.1.1",
+    "vite-plugin-dts": "^2.3.0"
+  },
+  "packageManager": "yarn@3.6.1"
 }

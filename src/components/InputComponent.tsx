@@ -19,9 +19,10 @@ import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { Control, Controller, FieldError } from "react-hook-form";
 
 export interface InputComponentProps extends FormControlProps {
-  control: Control;
-  name: string;
-  error?: FieldError;
+    control: Control<any, object>;
+    disabled?: boolean;
+    name: string;
+    error?: FieldError;
     inputProps?: InputProps;
     groupProps?: InputGroupProps;
     leftAddon?: React.ReactNode;
@@ -35,17 +36,20 @@ export interface InputComponentProps extends FormControlProps {
     type?: "text" | "password" | "datetime" | "color" | "search" | "file" | "email" | "number";
     size?: "xs" | "sm" | "md" | "lg";
     variant?: "outline" | "unstyled" | "flushed" | "filled";
-    value?: string;
-    onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    //value?: string;
+    // todo: if we want an additional onchange handler, might need to have more complicated logic
+    // onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   }
 
 const InputComponent: React.FC<InputComponentProps> = ({
     control,
+    disabled = false,
     name,
     error,
     groupProps,
     leftAddon,
     leftAddonProps,
+    placeholder,
     rightAddon,
     rightAddonProps,
     leftElement,
@@ -55,8 +59,9 @@ const InputComponent: React.FC<InputComponentProps> = ({
     type = "text",
     size = "md",
     variant = "outline",
-    value,
-    onChange,
+//    value,
+    // todo: if we want an additional onchange handler, might need to have more complicated logic
+//    onChange,
     label,
     ...props
 }) => {
@@ -75,17 +80,20 @@ const InputComponent: React.FC<InputComponentProps> = ({
             <Controller
                 control={control}
                 name={name}
-                render={({ field }) => (
+                render={({field}) => (
                     <InputGroup {...groupProps}>
                         {leftAddon && <InputLeftAddon {...leftAddonProps}>{leftAddon}</InputLeftAddon>}
                         {leftElement && (
                             <InputLeftElement {...leftElementProps}>{leftElement}</InputLeftElement>
                         )}
-                        <Input
-                            {...props}
+                    <Input
+		    {...field}
+		    {...{
+			disabled,
+			placeholder,
+			variant
+		    }}
                             type={type === "password" && !showPassword ? "password" : type}
-                            value={value}
-                            onChange={onChange}
                         />
                         {rightElement && (
                         <InputRightElement {...rightElementProps}>

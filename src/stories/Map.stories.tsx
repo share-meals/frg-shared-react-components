@@ -2,6 +2,8 @@ import {
     useEffect,
     useState
 } from 'react';
+import ChakraUIRenderer from 'chakra-ui-markdown-renderer';
+import ReactMarkdown from 'react-markdown';
 import {
     ComponentStory,
     ComponentMeta
@@ -10,18 +12,23 @@ import {
     Map
 } from '../components/Map';
 import {
-    ChakraProvider,
+    Button,
     Box,
+    ChakraProvider,
     Flex,
     IconButton,
+    List,
+    ListItem,
     Spacer,
     Text,
-    theme
+    theme,
+    useClipboard
 } from '@chakra-ui/react';
 import {
     ChevronLeftIcon,
     ChevronRightIcon,
 } from '@chakra-ui/icons';
+
 export default {
     title: 'Components/Map',
     component: Map
@@ -29,49 +36,63 @@ export default {
 
 import food_pantries from './data/food_pantries.json';
 import soup_kitchens from './data/soup_kitchens.json';
-import subway_lines from './data/subway_lines.json';
-import green_truck from './data/green_truck.png';
-import blue_truck from './data/blue_truck.png';
+import cpds from './data/cpds.json';
+import cpd_truck from './data/cpd_truck.png';
 
 const Renderer = ({data}: any) => {
-    const [page, setPage] = useState(0);
-    if(data === undefined
-       || data.length === 0){
+    const {onCopy, value: clipboardValue, setValue: setClipboardValue, hasCopied} = useClipboard("");
+    useEffect(() => {
+	if(data !== null){
+	    setClipboardValue(`${data.name}
+${data.address}
+${data.city}, ${data.state} ${data.zip}
+
+${data.hours}${data.notes ? '\n\n' + data.notes : ''}`);
+	}
+    }, [JSON.stringify(data)]);
+    if(data === null){
 	return (
 	    <>
-		These are the instructions.
+		<Text>
+		    Welcome to the City Harvest Resource Map! Here are all of the food pantries, soup kitchens, community partners. Click on any marker for more information.
+		</Text>
 	    </>
 	);
     }else{
 	return (
 	    <>
-		{data.length > 1 &&
-		 <Flex>
-		     <Spacer />
-		     <IconButton
-			 aria-label='previous page'
-			 size='xs'
-			 icon={<ChevronLeftIcon />}
-			 isDisabled={page === 0}
-			 onClick={() => {setPage(page - 1);}}
+		<Flex>
+		    <Text>
+			<strong>{data.name}</strong>
+		    </Text>
+		    <Spacer />
+		    <Button
+			isDisabled={hasCopied}
+			onClick={onCopy}
+			color='blue'
+			size='xs'
+		    >
+			{hasCopied ? 'copied!' : 'copy'}
+		    </Button>
+		</Flex>
+		<Text>
+		    {data.address}
+		</Text>
+		<Text>
+		    {data.city}, {data.state} {data.zip}
+		</Text>
+		<List mt={4}>
+		    {data.hours.split('\n').map((hour: string) => <ListItem>{hour}</ListItem>)}
+		</List>
+		{data.notes &&
+		 <Box mt={4}>
+		     <ReactMarkdown
+			 components={ChakraUIRenderer()}
+			 children={data.notes}
+			 skipHtml
 		     />
-		     <Text ml='4' mr='4'>
-			 {page + 1} of {data.length}
-		     </Text>
-		     <IconButton
-			 aria-label='next page'
-			 size='xs'
-			 icon={<ChevronRightIcon />}
-			 isDisabled={page === data.length - 1}
-			 onClick={() => {setPage(page + 1);}}
-		     />
-		 </Flex>
+		 </Box>
 		}
-		<strong>{data[page].name}</strong>
-		<br />
-		{data[page].address}
-		<br />
-		{data[page].city}, {data[page].state} {data[page].zip}
 	    </>
 	);
     }
@@ -80,8 +101,37 @@ const Renderer = ({data}: any) => {
 const Template: ComponentStory<typeof Map> = (args) =>
     <ChakraProvider theme={theme}>
 	<div style={{height: '50vh'}}>
-	    <Map {...args}>
-	    </Map>
+	    <Map
+	    {...args}
+	        layers={[
+		    {
+			name: 'Community Partner Distributions',
+			geojson: cpds,
+			color: '#23B0F0',
+			icon: {
+			    src: cpd_truck,
+			    scale: 0.4
+			}
+		    },
+		    {
+			name: 'Food Pantries',
+			geojson: food_pantries,
+			color: '#64A70B'
+		    },
+		    {
+			name: 'Soup Kitchens',
+			geojson: soup_kitchens,
+			color: '#FFD100'
+		    }
+		]}
+		center={{
+		    lat: 40.7127281,
+		    lng: -74.0060152
+		}}
+		renderer={Renderer}
+		onClick={console.log}
+		routerUrl='http://router.project-osrm.org'
+	    />
 	</div>
     </ChakraProvider>
 ;
@@ -89,31 +139,12 @@ const Template: ComponentStory<typeof Map> = (args) =>
 export const Primary = Template.bind({});
 
 Primary.args = {
-    layers: [
-	{
-	    name: 'Subway Lines',
-	    geojson: subway_lines,
-	    color: 'purple'
-	},
-	{
-	    name: 'Food Pantries',
-	    geojson: food_pantries,
-	    color: 'red',
-	    icon: {
-		src: blue_truck,
-		scale: 0.4
-	    }
-	},
-	{
-	    name: 'Soup Kitchens',
-	    geojson: soup_kitchens,
-	    color: 'blue'
-	}
-    ],
-    center: {
-	lat: 40.7127281,
-	lng: -74.0060152
-    },
-    Renderer: Renderer,
-    onClick: console.log
+    geocoderPlatform: 'nominatim',
+    geocoderUrl: 'https://nominatim.openstreetmap.org/search'
+};
+
+export const GoogleGeocoder = Template.bind({});
+
+GoogleGeocoder.args = {
+    geocoderPlatform: 'google'
 };
