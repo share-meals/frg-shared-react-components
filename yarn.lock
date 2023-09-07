@@ -2985,6 +2985,53 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@sharemeals/frg-react@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@sharemeals/frg-react@workspace:."
+  dependencies:
+    "@babel/core": ^7.21.4
+    "@storybook/addon-actions": ^7.2.1
+    "@storybook/addon-essentials": ^7.2.1
+    "@storybook/addon-interactions": ^7.2.1
+    "@storybook/addon-links": ^7.2.1
+    "@storybook/addon-mdx-gfm": ^7.2.1
+    "@storybook/react": ^7.2.1
+    "@storybook/react-vite": ^7.2.1
+    "@storybook/testing-library": ^0.2.0
+    "@types/osrm": ^5.25.2
+    "@types/react": ^18.0.28
+    "@types/react-dom": ^18.0.11
+    "@types/react-geocode": ^0.2.1
+    "@vitejs/plugin-react-swc": ^3.0.0
+    babel-loader: ^8.3.0
+    chakra-ui-markdown-renderer: ^4.1.0
+    install-peers-cli: ^2.2.0
+    ol: ^7.3.0
+    osrm-text-instructions: ^0.14.1-beta.3
+    react: ^18.2.0
+    react-dom: ^18.2.0
+    react-geocode: ^0.2.3
+    react-icons: ^4.10.1
+    react-markdown: ^8.0.7
+    react-to-text: ^2.0.1
+    rlayers: ^2.0.0-beta.0
+    storybook: ^7.2.1
+    typescript: ^4.9.3
+    vite: ^4.4.2
+    vite-plugin-css-injected-by-js: ^3.1.1
+    vite-plugin-dts: ^2.3.0
+  peerDependencies:
+    "@chakra-ui/icons": ^2.0.19
+    "@chakra-ui/react": ^2.5.5
+    "@emotion/react": ^11.10.6
+    "@emotion/styled": ^11.10.6
+    framer-motion: ^10.10.0
+    react: ^18.2.0
+    react-dom: ^18.2.0
+    react-hook-form: ^7.43.9
+  languageName: unknown
+  linkType: soft
+
 "@sinclair/typebox@npm:^0.27.8":
   version: 0.27.8
   resolution: "@sinclair/typebox@npm:0.27.8"
@@ -6674,52 +6721,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"frg@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "frg@workspace:."
-  dependencies:
-    "@babel/core": ^7.21.4
-    "@storybook/addon-actions": ^7.2.1
-    "@storybook/addon-essentials": ^7.2.1
-    "@storybook/addon-interactions": ^7.2.1
-    "@storybook/addon-links": ^7.2.1
-    "@storybook/addon-mdx-gfm": ^7.2.1
-    "@storybook/react": ^7.2.1
-    "@storybook/react-vite": ^7.2.1
-    "@storybook/testing-library": ^0.2.0
-    "@types/osrm": ^5.25.2
-    "@types/react": ^18.0.28
-    "@types/react-dom": ^18.0.11
-    "@types/react-geocode": ^0.2.1
-    "@vitejs/plugin-react-swc": ^3.0.0
-    babel-loader: ^8.3.0
-    chakra-ui-markdown-renderer: ^4.1.0
-    install-peers-cli: ^2.2.0
-    ol: ^7.3.0
-    osrm-text-instructions: ^0.14.1-beta.3
-    react: ^18.2.0
-    react-dom: ^18.2.0
-    react-geocode: ^0.2.3
-    react-icons: ^4.10.1
-    react-markdown: ^8.0.7
-    rlayers: ^2.0.0-beta.0
-    storybook: ^7.2.1
-    typescript: ^4.9.3
-    vite: ^4.4.2
-    vite-plugin-css-injected-by-js: ^3.1.1
-    vite-plugin-dts: ^2.3.0
-  peerDependencies:
-    "@chakra-ui/icons": ^2.0.19
-    "@chakra-ui/react": ^2.5.5
-    "@emotion/react": ^11.10.6
-    "@emotion/styled": ^11.10.6
-    framer-motion: ^10.10.0
-    react: ^18.2.0
-    react-dom: ^18.2.0
-    react-hook-form: ^7.43.9
-  languageName: unknown
-  linkType: soft
-
 "fs-constants@npm:^1.0.0":
   version: 1.0.0
   resolution: "fs-constants@npm:1.0.0"
@@ -10152,6 +10153,16 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 7ee8ef3aab74c7ae1d70ff34a27643d11ba1a8d62d072c767827d9ff9a520905223e567002e0bf6c772929d8ea1c781a3ba0cc4a563e92b1e3dc2eaa817ecbe8
+  languageName: node
+  linkType: hard
+
+"react-to-text@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "react-to-text@npm:2.0.1"
+  peerDependencies:
+    react: ^18.2.0
+    react-dom: ^18.2.0
+  checksum: 8ca6d0c826f1159591df7a15dc56ec9edbda0c8ff629dd22c251b9f9d94bd75ed1c344ad6556391c3583c0d793fdabf6a06a647140e5b9087ff5d768253d03a6
   languageName: node
   linkType: hard
 

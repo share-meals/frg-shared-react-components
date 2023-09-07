@@ -1,13 +1,5 @@
-/*
-Use icons from style guide
-Accessibility --> ability to increase text size?
-Mobile friendly?  
-Icons should resize based on view  
-X Are the subway lines necessary?  
-Possible to include a 'Get directions' Google Map link in the popup windows?
-*/
-
 import {
+    AspectRatio,
     Box,
     Button,
     Card,
@@ -19,7 +11,11 @@ import {
     HStack,
     IconButton,
     Modal,
+    ModalBody,
+    ModalCloseButton,
     ModalContent,
+    ModalFooter,
+    ModalHeader,
     ModalOverlay,
     Popover,
     PopoverArrow,
@@ -32,6 +28,7 @@ import {
     Text,
     VStack,
     useDisclosure,
+    useToast,
     useMediaQuery
 } from '@chakra-ui/react';
 import {
@@ -53,11 +50,10 @@ import {
     useGeocoder
 } from './useGeocoder';
 import GeoJSON from 'ol/format/GeoJSON';
-import {Navigation} from './Navigation';
 import {
     Geometry,
     Point
-} from "ol/geom";
+} from 'ol/geom';
 import {
     RCircle,
     RFill,
@@ -80,10 +76,6 @@ import {
     useMemo,
     useState,
 } from 'react';
-import {
-    NavigationProvider,
-    useNavigation
-} from './useNavigation';
 
 import ILatLng from './interfaces/latlng';
 
@@ -94,15 +86,16 @@ const generateStyle = ({
     type,
     icon,
     radius = 8,
-    width = 8
+    width = 8,
+    zoomPercentage = 1
 }: any) => {
     switch(type){
 	case 'Point':
 	    if(icon === undefined){
 		return (
 		    <RStyle>
-			<RCircle radius={radius}>
-			    <RStroke color='white' width={width * 0.25} />
+			<RCircle radius={radius * zoomPercentage}>
+			    <RStroke color='white' width={width * 0.25 * zoomPercentage} />
 			    <RFill color={color} />
 			</RCircle>
 		    </RStyle>
@@ -112,7 +105,7 @@ const generateStyle = ({
 		    <RStyle>
 			<RIcon
 			src={icon.src}
-			scale={icon.scale}
+			scale={icon.scale * zoomPercentage}
 			/>
 		    </RStyle>
 		);
@@ -165,13 +158,32 @@ export type MapType = {
 
 export const Map = (props: MapType) => {
     return (
-	<NavigationProvider>
-	    <GeocoderProvider>
-		<MapComponent {...props} />
-	    </GeocoderProvider>
-	</NavigationProvider>
+	<GeocoderProvider>
+	    <MapComponent {...props} />
+	</GeocoderProvider>
     );
 }
+
+const calculateZoomLevel = ({
+    zoom,
+    minZoom,
+    maxZoom
+}: {
+    zoom: number,
+    minZoom: number,
+    maxZoom: number
+}) => {
+    const newZoomPercentage = (zoom - minZoom) / (maxZoom - minZoom);
+    if(newZoomPercentage <= 0.25){
+	return 0.5;
+    }else if(newZoomPercentage <= 0.5){
+	return 0.75;
+    }else if(newZoomPercentage <= 0.75){
+	return 1;
+    }else{
+	return 1.5;
+    }
+};
 
 const MapComponent = ({
     apiKey = null,
@@ -184,21 +196,23 @@ const MapComponent = ({
     layers = [],
     renderer,
     routerUrl,
-    zoom = 16,
+    zoom = 10,
     spotlightColor = 'red',
     onClick,
     maxZoom = 18,
-    minZoom = 13,
+    minZoom = 10,
     osrmVersion = 'v5'
 }: MapType
 ) => {
+    const toast = useToast();
     const [view, setView] = useState({
 	center: fromLonLat([center.lng, center.lat]),
 	zoom: zoom
     });
+    const [zoomPercentage, setZoomPercentage] = useState(1);
     const [popupData, setPopupData] = useState([]);
-    const {spotlight, route, setSpotlight} = useNavigation();
-    const {isOpen: isModalOpen, onOpen: openModal, onClose: closeModal} = useDisclosure();
+    const [spotlight, setSpotlight] = useState();
+    const {isOpen: isModalOpen, onOpen: openModal, onClose: closeModal} = useDisclosure({defaultIsOpen: true});
     const [isDesktop] = useMediaQuery('(min-width: 900px)');
     const features = useMemo(() => {
 	return layers.map((
@@ -270,12 +284,13 @@ const MapComponent = ({
 		    generateStyle({
 			color: layer.color,
 			type: layer.type,
-			icon: layer.icon
+			icon: layer.icon,
+			zoomPercentage
 		    })
 		}
 	    </RLayerVector>
 	)).reverse();
-    }, [features, visibleLayers]);
+    }, [features, visibleLayers, zoomPercentage]);
 
     const {
 	setPlatform: setGeocoderPlatform,
@@ -288,22 +303,36 @@ const MapComponent = ({
 	setGeocoderUrl(geocoderUrl);
 	setApiKey(apiKey)
     }, [geocoderPlatform, geocoderUrl, apiKey]);
-    
+
+    useEffect(() => {
+	const newZoomPercentage = calculateZoomLevel({
+	    zoom: view.zoom,
+	    minZoom,
+	    maxZoom
+	});
+	if(newZoomPercentage !== zoomPercentage){
+	    setZoomPercentage(newZoomPercentage);
+	}
+    }, [view]);
     return (
-	<HStack h='100%'>
+	<HStack h='100%' alignItems='stretch'>
 	    <Box w={isDesktop ? '67%' : '100%'} h='100%'>
 		<HStack mb={4}>
 		    <Popover>
 			<PopoverTrigger>
-			    <IconButton colorScheme='blue' aria-label='menu'>
-				<HamburgerIcon />
-			    </IconButton>
+			    <Button
+				colorScheme='blue'
+				aria-label='menu'
+				leftIcon={<HamburgerIcon />}
+			    >
+				Layers
+			    </Button>
 			</PopoverTrigger>
 			<PopoverContent p='0'>
 			    <PopoverArrow />
 			    <PopoverCloseButton />
 			    <PopoverHeader>
-				Layers
+				Layers - click to toggle
 			    </PopoverHeader>
 			    <PopoverBody p={4}>
 				<VStack align='start'>
@@ -314,78 +343,99 @@ const MapComponent = ({
 		    </Popover>
 		    <GeocoderInput
 			placeholder='Go to address ...'
-			onGeocode={(latlng: ILatLng) => {
-			    const point = fromLonLat([latlng.lng, latlng.lat]);
-			    setView({
-				center: point,
-				zoom: view.zoom
-			    });
-			    setSpotlight!(new Point(point));
+			onGeocode={(latlng: ILatLng | null) => {
+			    if(latlng !== null){
+				const point = fromLonLat([latlng.lng, latlng.lat]);
+				setView({
+				    center: point,
+				    zoom: view.zoom
+				});
+				// @ts-ignore
+				setSpotlight!(new Point(point));
+			    }else{
+				/////////
+				toast({
+				    title: 'Address not found',
+				    description: "Please try another address",
+				    status: 'error',
+				    isClosable: true,
+				    position: 'top'
+				})
+			    }
 			}}/>
 		</HStack>
-		<RMap
-		    maxZoom={maxZoom}
-		    minZoom={minZoom}
-		    noDefaultControls={true}
-		    height='100%'
-		    width='100%'
-		    initial={view}
-		    view={[view, setView]}
-		    onClick={(event) => {
-			const features = event.map.getFeaturesAtPixel(event.pixel);
-			if(features.length > 0){
-			    // todo: don't ignore
-			    // @ts-ignore
-			    setPopupData(features.map((feature) => {
+		<AspectRatio maxH='100%' ratio={1}>
+		    <RMap
+			maxZoom={maxZoom}
+			minZoom={minZoom}
+			noDefaultControls={true}
+			height='calc(100% - 56px)'
+			width='100%'
+			initial={view}
+			view={[view, setView]}
+			onClick={(event) => {
+			    const features = event.map.getFeaturesAtPixel(event.pixel);
+			    if(features.length > 0){
+				// todo: don't ignore
 				// @ts-ignore
-				const coords: Coordinate = toLonLat(feature.getGeometry()?.getCoordinates());
-				return {
-				    ...(feature.getProperties()),
-				    coords: {
-					lat: coords[1],
-					lng: coords[0]
-				    }
-				};
-			    }));
-			    event.map.getView().animate({center: event.coordinate});
-			    if(onClick){
-				const [lng, lat] = toLonLat(event.coordinate);
-				onClick({lng, lat});
-			    }
+				setPopupData(features
+				    .filter((feature) => {
+					return (feature.getProperties()).id !== undefined;
+				    })
+				    .map((feature) => {
+				    // @ts-ignore
+				    const coords: Coordinate = toLonLat(feature.getGeometry()?.getCoordinates());
+				    return {
+					...(feature.getProperties()),
+					coords: {
+					    lat: coords[1],
+					    lng: coords[0]
+					}
+				    };
+				}));
+				// @ts-ignore
+				const lnglat = toLonLat(features[0].getGeometry()?.getCoordinates());
+				const newCenter = fromLonLat(lnglat);
+
+				// todo: animate map
+				/*
+				event.map.getView().fit(features[0].getGeometry().getExtent(), {
+				    duration: 25,
+				    maxZoom: 15
+				});
+				 */
+
+				// @ts-ignore
+				setSpotlight(new Point(newCenter));
+				if(onClick){
+				    onClick({
+					lng: lnglat[0],
+					lat: lnglat[1]
+				    });
+				}
 				openModal();
-			}
-		    }}>
-		    <RLayerTile
+			    }
+			}}>
+			<RLayerTile
 			projection='EPSG:3857'
 			url='https://stamen-tiles.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png'
-		    />
-		    {layersRendered}
-		    <RLayerVector>
-			{generateStyle({
-			    color: 'red',
-			    type: 'LineString',
-			})}
-			<RFeature geometry={route as Geometry} />
-		    </RLayerVector>
-		    <RLayerVector>
-			{generateStyle({
-			    color: 'red',
-			    type: 'EmptyCircle',
-			    width: 8
-			})}
-			<RFeature geometry={spotlight} />
-		    </RLayerVector>
-		</RMap>
+			/>
+			{layersRendered}
+			<RLayerVector>
+			    {generateStyle({
+				color: 'red',
+				type: 'EmptyCircle',
+				width: 4,
+				zoomPercentage
+			    })}
+			    <RFeature geometry={spotlight} />
+			</RLayerVector>
+		    </RMap>
+		</AspectRatio>
 	    </Box>
 	    {isDesktop &&
 	     <Box w='33%' h='100%' p={4}>
 		 <Renderer data={popupData} key={JSON.stringify(popupData)} PageRenderer={renderer}/>
-		 {popupData.length > 0 &&
-		  <>
-		      <Divider my={4} />
-		      <Navigation {...{geocoderUrl, routerUrl, osrmVersion}} />
-		  </>
-		 }
 	     </Box>
 	    }
 	    {
@@ -394,11 +444,12 @@ const MapComponent = ({
 		    <Modal isOpen={isModalOpen} onClose={closeModal}>
 			<ModalOverlay />
 			<ModalContent>
-			    <Box p='4'>
-				<Renderer data={popupData} key={JSON.stringify(popupData)} PageRenderer={renderer} closeModal={closeModal} />
-				<Divider my={4} />
-				<Navigation {...{geocoderUrl, routerUrl, osrmVersion}} />
-			    </Box>
+			    <ModalHeader />
+			    <ModalCloseButton />
+			    <ModalBody>
+				<Renderer data={popupData} key={JSON.stringify(popupData)} PageRenderer={renderer} />
+			    </ModalBody>
+			    <ModalFooter />
 			</ModalContent>
 		    </Modal>
 		</>
@@ -408,33 +459,13 @@ const MapComponent = ({
 }
 
 const Renderer = ({
-    closeModal,
     data,
     PageRenderer
 }: {
-    closeModal?: any,
     data: any,
     PageRenderer: FunctionComponent<any>
 }) => {
     const [page, setPage] = useState(0);
-    const {
-	endAddress,
-	setEndAddress,
-	setEndCoords,
-	setRoute,
-	setSpotlight,
-	setInstructions
-    } = useNavigation();
-    useEffect(() => {
-	if(data !== undefined
-	   && data.length > 0){
-	    setEndAddress!(data[page].address);
-	    setEndCoords!(data[page].coords);
-	    setSpotlight!(new Point(fromLonLat([data[page].coords.lng, data[page].coords.lat])));
-	    setInstructions!(null);
-	    setRoute!(null);
-	}
-    }, [data, page, setEndCoords, setEndAddress])
     if(data === undefined
        || data.length === 0){
 	return (
@@ -448,40 +479,28 @@ const Renderer = ({
 		<Flex mb='4'>
 	    	    {data.length > 1 &&
 		     <>
-		     <IconButton
-			 aria-label='previous page'
-			 size='xs'
-			 icon={<ChevronLeftIcon />}
-			 isDisabled={page === 0}
-			 onClick={() => {setPage(page - 1);}}
-		     />
-		     <Text ml='4' mr='4'>
-			 {page + 1} of {data.length}
-		     </Text>
-		     <IconButton
-			 aria-label='next page'
-			 size='xs'
-			 icon={<ChevronRightIcon />}
-			  isDisabled={page === data.length - 1}
-			 onClick={() => {setPage(page + 1);}}
-		     />
+			 <IconButton
+			     aria-label='previous page'
+			     size='xs'
+			     icon={<ChevronLeftIcon />}
+			     isDisabled={page === 0}
+			     onClick={() => {setPage(page - 1);}}
+			 />
+			 <Text ml='4' mr='4'>
+			     {page + 1} of {data.length}
+			 </Text>
+			 <IconButton
+			     aria-label='next page'
+			     size='xs'
+			     icon={<ChevronRightIcon />}
+			     isDisabled={page === data.length - 1}
+			     onClick={() => {setPage(page + 1);}}
+			 />
 		     </>
-		    }
-		    {
-			closeModal && <>
-			    <Spacer />
-			    <IconButton
-				aria-label='close'
-				icon={<CloseIcon />}
-				onClick={closeModal}
-				size='xs'
-			    />
-			</>
 		    }
 		</Flex>
 		<PageRenderer data={data[page]} />
 	    </>
 	);
     }
-
 }

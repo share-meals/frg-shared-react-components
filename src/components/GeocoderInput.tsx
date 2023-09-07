@@ -20,7 +20,7 @@ type TGeocoderInput = {
     address: string
 };
 
-const geocodeNominatim = async (data: TGeocoderInput, url: string | null): Promise<ILatLng> => {
+const geocodeNominatim = async (data: TGeocoderInput, url: string | null): Promise<ILatLng | null> => {
     const geocoderResponse = await fetch(`${url}?q=${data.address}&limit=1&format=json`);
     const geocoderJson: INominatimSearchResult[] = await geocoderResponse.json();
     if(geocoderJson.length > 0){
@@ -29,11 +29,9 @@ const geocodeNominatim = async (data: TGeocoderInput, url: string | null): Promi
 	    lng: parseFloat(geocoderJson[0].lon)
 	};
     }else{
+	console.log(geocoderResponse);
 	// todo: error checking
-	return {
-	    lat: 0,
-	    lng: 0
-	}
+	return null
     }
 };
 
@@ -63,11 +61,11 @@ const geocodeGoogle = async (data: TGeocoderInput, apiKey: string | null): Promi
 
 export const GeocoderInput = ({
     label,
-    onGeocode = (latlng: ILatLng) => {},
+    onGeocode = (latlng: ILatLng | null) => {},
     placeholder
 }: {
     label?: string,
-    onGeocode: (latlng: ILatLng) => void,
+    onGeocode: (latlng: ILatLng | null) => void,
     placeholder?: string
 }) => {
     const {control, handleSubmit} = useForm<TGeocoderInput>({
