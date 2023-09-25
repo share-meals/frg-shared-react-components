@@ -146,11 +146,13 @@ export type MapType = {
     geocoderPlatform: 'nominatim' | 'google',
     geocoderUrl: string,
     layers: any[],
+    noDefaultControls: boolean,
     renderer: FunctionComponent,
     routerUrl: string,
     zoom: number,
     spotlightColor: string,
     onClick: any,
+    onCenter: any,
     maxZoom: number,
     minZoom: number,
     osrmVersion: string
@@ -194,11 +196,13 @@ const MapComponent = ({
     geocoderPlatform,
     geocoderUrl,
     layers = [],
+    noDefaultControls = true,
     renderer,
     routerUrl,
     zoom = 10,
     spotlightColor = 'red',
-    onClick,
+    onClick = null,
+    onCenter = null,
     maxZoom = 18,
     minZoom = 10,
     osrmVersion = 'v5'
@@ -343,7 +347,13 @@ const MapComponent = ({
 		    </Popover>
 		    <GeocoderInput
 			placeholder='Go to address ...'
-			onGeocode={(latlng: ILatLng | null) => {
+		    onGeocode={(latlng: ILatLng | null, address: string) => {
+			    if(onCenter !== null){
+				onCenter({
+				    ...latlng,
+				    address
+				});
+			    }
 			    if(latlng !== null){
 				const point = fromLonLat([latlng.lng, latlng.lat]);
 				setView({
@@ -368,7 +378,7 @@ const MapComponent = ({
 		    <RMap
 			maxZoom={maxZoom}
 			minZoom={minZoom}
-			noDefaultControls={true}
+			noDefaultControls={noDefaultControls}
 			height='calc(100% - 56px)'
 			width='100%'
 			initial={view}
@@ -407,7 +417,7 @@ const MapComponent = ({
 
 				// @ts-ignore
 				setSpotlight(new Point(newCenter));
-				if(onClick){
+				if(onClick !== null){
 				    onClick({
 					lng: lnglat[0],
 					lat: lnglat[1]

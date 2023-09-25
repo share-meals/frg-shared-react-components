@@ -36,7 +36,7 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon,
 } from '@chakra-ui/icons';
-import {hoursIsValid} from '../components/HoursParser';
+//import {hoursIsValid} from '../components/HoursFormatter';
 import reactToText from 'react-to-text';
 
 
@@ -48,7 +48,7 @@ export default {
 import food_pantries from './data/food_pantries.json';
 import soup_kitchens from './data/soup_kitchens.json';
 import mms from './data/mms.json';
-//import mm_truck from './data/mm_truck.png';
+import mm_truck from './data/mm_truck.png';
 import cpds from './data/cpds.json';
 import cpd_truck from './data/cpd_truck.png';
 
@@ -120,8 +120,9 @@ const formatData = (data: any) => {
 `**${data.name}**  
 ${data.address}    
 ${data.city}, ${data.state} ${data.zipcode}  
+[get directions](https://www.google.com/maps/dir/${data.lat},${data.lng}//@${data.lat},${data.lng},18.5z?entry=ttu)
 ${data.website ? '\nvisit the [website](' + data.website + ')' :''}
-${data.hours && data.hours.trim() !== '&' && hoursIsValid(data.hours) ? '\n\n**Hours of Operation**\n' + data.hours.trim().split('\n').map((hour: string) => `- ${hour}`).join('\n') : ''}
+${data.hours && data.hours.trim() !== '&' && true ? '\n\n**Hours of Operation**\n' + data.hours.trim().split('\n').map((hour: string) => `- ${hour}`).join('\n') : ''}
 ${data.notes && data.notes.trim() !== '' ? '\n\n**Notes**  \n' + data.notes : ''}
 ${data.trackedBy && data.trackedBy.includes('Plentiful') ? '\n  \nBook an appointment on [plentiful](https://plentifulapp.com/)' : ''}
 `
@@ -155,7 +156,7 @@ const Renderer = ({data}: any) => {
 		>
 		    {hasCopied ? 'copied!' : 'copy'}
 		</Button>
-		<ReactMarkdown components={ChakraUIRenderer()} children={formatData(data)} skipHtml />
+		<ReactMarkdown linkTarget='_blank' components={ChakraUIRenderer()} children={formatData(data)} skipHtml />
 	    </>
 	);
     }
@@ -172,7 +173,7 @@ const Template: ComponentStory<typeof Map> = (args) =>
 		    color: '#23B0F0',
 		    icon: {
 			src: cpd_truck,
-			scale: 0.4
+			scale: 0.6
 		    }
 		},
 		{
@@ -180,8 +181,8 @@ const Template: ComponentStory<typeof Map> = (args) =>
 		    geojson: mms,
 		    color: '#388e3d',
 		    icon: {
-			src: cpd_truck,
-			scale: 0.4
+			src: mm_truck,
+			scale: 0.6
 		    }
 		},
 		{
@@ -201,6 +202,7 @@ const Template: ComponentStory<typeof Map> = (args) =>
 	}}
 	renderer={Renderer}
 	onClick={() => {}}
+	onCenter={() => {}}
 	routerUrl='http://router.project-osrm.org'
 	/>
     </ChakraProvider>

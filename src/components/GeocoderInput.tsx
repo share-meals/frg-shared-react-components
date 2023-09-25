@@ -61,11 +61,11 @@ const geocodeGoogle = async (data: TGeocoderInput, apiKey: string | null): Promi
 
 export const GeocoderInput = ({
     label,
-    onGeocode = (latlng: ILatLng | null) => {},
+    onGeocode = (latlng: ILatLng | null, address: string) => {},
     placeholder
 }: {
     label?: string,
-    onGeocode: (latlng: ILatLng | null) => void,
+    onGeocode: (latlng: ILatLng | null, address: string) => void,
     placeholder?: string
 }) => {
     const {control, handleSubmit} = useForm<TGeocoderInput>({
@@ -84,10 +84,10 @@ export const GeocoderInput = ({
 	// todo: error checking
 	switch(platform){
 	    case 'nominatim':
-		onGeocode(await geocodeNominatim(data, url));
+		onGeocode(await geocodeNominatim(data, url), data.address);
 		break;
 	    case 'google':
-		onGeocode(await geocodeGoogle(data, apiKey));
+		onGeocode(await geocodeGoogle(data, apiKey), data.address);
 		break;
 	}
 	setLoading(false);

@@ -23,6 +23,7 @@ export interface InputComponentProps extends FormControlProps {
     disabled?: boolean;
     name: string;
     error?: FieldError;
+    helperText?: string;
     inputProps?: InputProps;
     groupProps?: InputGroupProps;
     leftAddon?: React.ReactNode;
@@ -46,6 +47,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
     disabled = false,
     name,
     error,
+    helperText,
     groupProps,
     leftAddon,
     leftAddonProps,
@@ -104,6 +106,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                     </InputGroup>
                 )}
             />
+	    {helperText && <FormHelperText>{helperText}</FormHelperText>}
             {error && <FormHelperText>{error.message}</FormHelperText>}
         </FormControl>
     );

@@ -35,27 +35,24 @@ const Template: Story<InputComponentProps> = (args) => {
     [key: string]: string;
   };
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormValues>();
+    return (
+	<ChakraProvider>
+            <InputComponent {...args} />
+	</ChakraProvider>
+    );
+};
 
-  const onSubmit: SubmitHandler<FormValues> = (data) => {
-    console.log(data);
-  };
-
+/*
+export const WithoutLabel = () => {
   return (
-    <ChakraProvider>
-      <Box width="400px">
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <InputComponent {...args} control={control} error={errors[args.name]} />
-          <button type="submit">Submit</button>
-        </form>
-      </Box>
-    </ChakraProvider>
+      <Template name='hello' />
   );
 };
+*/
+
+
+
+/*
 
 export const Default = Template.bind({});
 Default.args = {
@@ -150,3 +147,5 @@ export const InputsWithElements = () => {
     </Box>
   );
 };
+
+*/

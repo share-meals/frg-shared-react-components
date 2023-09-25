@@ -23,34 +23,94 @@ import {
 } from '@chakra-ui/icons';
 
 import {
-    hoursIsValid,
-    hoursParse
-} from '../components/HoursParser';
+    formatDays,
+    formatHour,
+    isValid,
+    IHours,
+    IDictionary
+} from '../components/HoursFormatter';
 
 export default {
-    title: 'Utilities/HoursParser',
+    title: 'Utilities/HoursFormatter',
     component: Box
 } as ComponentMeta<typeof Box>;
 
-const HoursRow = ({text}: {text: string}) => {
-    const results = hoursParse(text);
-    if(hoursIsValid(text)){
-	return results.map(({days, hours, notes}: {days: string, hours: string, notes: string}, index: number) =>
-	    <Tr key={index}>
+
+interface ITime {
+    time_start: string,
+    time_end?: string,
+    time_zone: string
+}
+
+const TimeDisplay = ({
+    time
+}: {
+    time: ITime
+}) => {
+    let payload_New_York = '';
+    payload_New_York += formatHour({
+	time: time.time_start,
+	format: 'h:mmA',
+	time_zone: time.time_zone,
+	//time_zone_display: 'America/New_York'
+    });
+    if(time.time_end){
+	payload_New_York += ' - ';
+	payload_New_York += formatHour({
+	    time: time.time_end,
+	    format: 'h:mmA',
+	    time_zone: time.time_zone,
+	    //time_zone_display: 'America/New_York'
+	});
+    }
+    let payload_Berlin = '';
+    payload_Berlin += formatHour({
+	time: time.time_start,
+	format: 'h:mmA',
+	time_zone: time.time_zone,
+	time_zone_display: 'Europe/Berlin'
+    });
+    if(time.time_end){
+	payload_Berlin += ' - ';
+	payload_Berlin += formatHour({
+	    time: time.time_end,
+	    format: 'h:mmA',
+	    time_zone: time.time_zone,
+	    time_zone_display: 'Europe/Berlin'
+	});
+    }
+    return <>
+	{payload_New_York}
+	<br />
+	{payload_Berlin}
+    </>
+}
+
+const HoursRow = ({
+    hour,
+    dictionary
+}: {
+    hour: IHours,
+    dictionary: IDictionary
+}) => {
+    const days = hour.days ? formatDays({days: hour.days, dictionary}) : '';
+    if(isValid(hour)){
+	return (
+	    <Tr>
 		<Td>
-		    {index === 0 && <IconButton icon={<CheckIcon />} colorScheme='green' aria-label='valid' />}
+		    <IconButton icon={<CheckIcon />} colorScheme='green' aria-label='valid' />
 		</Td>
 		<Td>
-		    {index === 0 ? text.split('\n').map(h => <Text key={h}>{h}</Text>) : ''}
+		    <Box display='block' whiteSpace='pre'>{JSON.stringify(hour, null, ' ')}</Box>
 		</Td>
 		<Td>
 		    {days}
 		</Td>
 		<Td>
-		    {hours}
+		    {hour.time_start !== null && hour.time_zone !== null && <TimeDisplay time={hour as ITime} />}
 		</Td>
 		<Td>
-		    {notes}
+		    {hour.notes}
 		</Td>
 	    </Tr>
 	);
@@ -61,24 +121,26 @@ const HoursRow = ({text}: {text: string}) => {
 		    <IconButton icon={<CloseIcon />} colorScheme='red' aria-label='invalid' />
 		</Td>
 		<Td>
-		    {text.split('\n').map(h => <Text key={h}>{h}</Text>)}
+		    <Box display='block' whiteSpace='pre'>{JSON.stringify(hour, null, ' ')}</Box>
 		</Td>
-		<Td>
-
-		</Td>
-		<Td>
-
-		</Td>
-		<Td>
-
-		</Td>
+		<Td />
+		<Td />
 	    </Tr>
 	);
     }
 }
 
+
 // @ts-ignore
-const Template: ComponentStory<typeof Box> = ({hours}: {hours: string[]}) => {
+const Template: ComponentStory<typeof Box> = (
+    {
+	hours,
+	dictionary
+    }: {
+	hours: IHours[],
+	dictionary: IDictionary
+    }
+) => {
     return (
 	<ChakraProvider theme={theme}>
 	    <TableContainer>
@@ -86,7 +148,7 @@ const Template: ComponentStory<typeof Box> = ({hours}: {hours: string[]}) => {
 		    <Thead>
 			<Tr>
 			    <Td>
-
+				
 			    </Td>
 			    <Td>
 				input
@@ -104,7 +166,9 @@ const Template: ComponentStory<typeof Box> = ({hours}: {hours: string[]}) => {
 		    </Thead>
 		    <Tbody>
 			{
-			    hours.map((text: string, index: number) => <HoursRow key={index} text={text} />)
+			    hours.map((hour: IHours, index: number) => 
+				<HoursRow key={index} hour={hour} dictionary={dictionary} />
+			    )
 			}
 		    </Tbody>
 		</Table>
@@ -113,22 +177,121 @@ const Template: ComponentStory<typeof Box> = ({hours}: {hours: string[]}) => {
     );
 };
 
+const hoursData = [
+    {
+	days: 'x6',
+	time_start: '12:00',
+	time_end: '14:00',
+	notes: null,
+	time_zone: 'America/New_York'
+    },
+    {
+	days: null,
+	time_start: '9:00',
+	time_end:'11:00',
+	notes: 'Once a month, usually on Friday',
+	time_zone: 'America/New_York'
+    },
+    {
+	days: '1234',
+	time_start: '10:00',
+	time_end:'14:00',
+	notes: null,
+	time_zone: 'America/New_York'
+    },
+    {
+	days: '5',
+	time_start: '10:00',
+	time_end: '12:00',
+	notes: null,
+	time_zone: 'America/New_York'
+    },
+    {
+	days: '2',
+	time_start: '11:30',
+	time_end:'13:00',
+	notes: '',
+	time_zone: 'America/New_York'
+    },
+    {
+	days: '14',
+	time_start: '11:00',
+	time_end: '13:00',
+	notes: null,
+	time_zone: 'America/New_York'
+    },
+    {
+	days: '12345',
+	time_start: null,
+	time_end: null,
+	notes: 'Eat-In Meals',
+	time_zone: 'America/New_York'
+    },
+    {
+	days: '12345',
+	time_start: '12:00',
+	time_end: '13:00',
+	notes: 'Eat-In Meals',
+	time_zone: 'America/New_York'
+    },
+    {
+	days: '12345',
+	time_start: '13:00',
+	time_end: '13:30',
+	notes: 'Grab-and-Go Meal Distribution',
+	time_zone: 'America/New_York'
+    },
+    {
+	days: '02345',
+	time_start: '12:00',
+	time_end: '13:00',
+	notes: 'Eat-In Meals',
+	time_zone: 'America/New_York'
+    },
+    {
+	days: '12345',
+	time_start: '13:00',
+	time_end: '13:30',
+	notes: 'Grab-and-Go Meal Distribution',
+	time_zone: 'America/New_York'
+    },
+    {
+	days: '123456',
+	time_start: '9:00',
+	time_end: '10:30',
+	notes: 'Breakfast',
+	time_zone: 'America/New_York'
+    },
+    {
+	days: '123456',
+	time_start: '11:00',
+	time_end: '13:30',
+	notes: null,
+	time_zone: 'America/New_York'
+    },
+    {
+	days: '123',
+	time_start: '15:00',
+	time_end: '13:30',
+	notes: null,
+	time_zone: 'America/New_York'
+    }
+];
+
 export const Primary = Template.bind({});
 
 Primary.args = {
-    hours: [
-	`Sa 12:00PM-02:00PM`,
-	`09:00AM-11:00PM "Once a Month, Usually on Friday"`,
-	`Mo-Th 10:00AM-02:00PM
-Fr 10:00AM-12:00PM`,
-	`Tu 11:30AM-01:00PM
-Mo,Th 11:00AM-01:00PM`,
-	`Mo-Fr "Eat-In Meals"`,
-	`Mo-Fr 12:00PM-01:00PM "Eat-In Meals"
-Mo-Fr 01:00PM-01:30PM "Grab-and-Go Meal Distribution"`,
-	`Mx-Fr 12:00PM-01:00PM "Eat-In Meals"
-Mo-Fr 01:00PM-01:30PM "Grab-and-Go Meal Distribution"`,
-	`Mo-Sa 09:00AM-10:30AM "Breakfast"
-Mo-Sa 11:30AM-01:30PM`
-    ]
+    hours: hoursData,
+    dictionary: {
+	and: ' and ',
+	comma: ', ',
+	lastComma: ', and ',
+	'1': 'Mondays',
+	'2': 'Tuesdays',
+	'3': 'Wednesdays',
+	'4': 'Thursdays',
+	'5': 'Fridays',
+	'6': 'Saturdays',
+	'7': 'Sundays'
+    }
 };
