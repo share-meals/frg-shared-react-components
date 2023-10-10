@@ -42,7 +42,7 @@ export interface InputComponentProps extends FormControlProps {
     // onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   }
 
-const InputComponent: React.FC<InputComponentProps> = ({
+export const InputComponent: React.FC<InputComponentProps> = ({
     control,
     disabled = false,
     name,
@@ -111,5 +111,3 @@ const InputComponent: React.FC<InputComponentProps> = ({
         </FormControl>
     );
 };
-
-export default InputComponent;

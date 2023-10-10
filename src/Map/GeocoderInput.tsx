@@ -1,7 +1,7 @@
 import {
     Button
 } from '@chakra-ui/react';
-import InputComponent from './InputComponent';
+import {InputComponent} from '../InputComponent/InputComponent';
 import {
     FieldValues,
     useForm

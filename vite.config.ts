@@ -16,13 +16,18 @@ export default defineConfig({
     ],
     build: {
 	lib: {
-	    entry: path.resolve(__dirname, 'src/components/index.tsx'),
-	    name: 'frg',
-	    formats: [
-		'es',
-		'umd'
+	    /*
+	    entry: [
+		path.resolve(__dirname, 'src/HoursFormatter/HoursFormatter.tsx'),
+		path.resolve(__dirname, 'src/InputComponent/InputComponent.tsx'),
+		path.resolve(__dirname, 'src/Map/Map.tsx')
+
 	    ],
-	    fileName: (format) => `frg.${format}.js`
+	     */
+	    entry: path.resolve(__dirname, 'src/index.tsx'),
+	    name: 'frg-react',
+	    formats: ['es'],
+	    fileName: 'frg-react.es'
 	},
 	rollupOptions: {
 	    /*

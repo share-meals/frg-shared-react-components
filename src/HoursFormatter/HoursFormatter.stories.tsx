@@ -28,7 +28,7 @@ import {
     isValid,
     IHours,
     IDictionary
-} from '../components/HoursFormatter';
+} from './HoursFormatter';
 
 export default {
     title: 'Utilities/HoursFormatter',

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Meta, Story } from "@storybook/react";
 import { Box, Text, ChakraProvider} from "@chakra-ui/react";
-import InputComponent, { InputComponentProps } from "../components/InputComponent";
+import {InputComponent, InputComponentProps} from './InputComponent';
 import { ViewIcon } from "@chakra-ui/icons";
 import { SubmitHandler, useForm } from "react-hook-form";
 

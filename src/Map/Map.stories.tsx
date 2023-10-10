@@ -10,7 +10,7 @@ import {
 } from '@storybook/react';
 import {
     Map as Map
-} from '../components/Map';
+} from './Map';
 import {
     Button,
     Box,
@@ -45,12 +45,12 @@ export default {
     component: Map
 } as ComponentMeta<typeof Map>;
 
-import food_pantries from './data/food_pantries.json';
-import soup_kitchens from './data/soup_kitchens.json';
-import mms from './data/mms.json';
-import mm_truck from './data/mm_truck.png';
-import cpds from './data/cpds.json';
-import cpd_truck from './data/cpd_truck.png';
+import food_pantries from './stories_data/food_pantries.json';
+import soup_kitchens from './stories_data/soup_kitchens.json';
+import mms from './stories_data/mms.json';
+import mm_truck from './stories_data/mm_truck.png';
+import cpds from './stories_data/cpds.json';
+import cpd_truck from './stories_data/cpd_truck.png';
 
 const theme = extendTheme({
     components: {
