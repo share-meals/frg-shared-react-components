@@ -1,4 +1,9 @@
 import {
+    Accordion,
+    AccordionItem,
+    AccordionButton,
+    AccordionPanel,
+    AccordionIcon,
     AspectRatio,
     Box,
     Button,
@@ -66,6 +71,7 @@ import {
     RLayerTile,
     RLayerVector,
     RMap,
+    ROSM,
     ROverlay
 } from 'rlayers';
 import {
@@ -82,11 +88,12 @@ import ILatLng from './interfaces/latlng';
 import 'ol/ol.css';
 
 const generateStyle = ({
-    color,
+    strokeColor,
+    fillColor,
     type,
     icon,
-    radius = 8,
-    width = 8,
+    radius = 12,
+    width = 12,
     zoomPercentage = 1
 }: any) => {
     switch(type){
@@ -95,8 +102,8 @@ const generateStyle = ({
 		return (
 		    <RStyle>
 			<RCircle radius={radius * zoomPercentage}>
-			    <RStroke color='white' width={width * 0.25 * zoomPercentage} />
-			    <RFill color={color} />
+			    <RStroke color={strokeColor} width={width * 0.25 * zoomPercentage} />
+			    <RFill color={fillColor} />
 			</RCircle>
 		    </RStyle>
 		);
@@ -114,15 +121,15 @@ const generateStyle = ({
 	case 'LineString':
 	    return (
 		<RStyle>
-		    <RStroke color={color} width={width} />
+		    <RStroke color={strokeColor} width={width} />
 		</RStyle>
 	    );
 	    break;
-	case 'EmptyCircle':
+	case 'Spotlight':
 	    return (
 		<RStyle>
-		    <RCircle radius={radius}>
-			<RStroke color={color} width={width}/>
+		    <RCircle radius={radius * zoomPercentage}>
+			<RFill color={strokeColor} />
 		    </RCircle>
 		</RStyle>
 	    );
@@ -130,35 +137,39 @@ const generateStyle = ({
 	    return (
 		<RStyle>
 		    <RCircle radius={radius}>
-			<RFill color={color} />
+			<RFill color={strokeColor} />
 		    </RCircle>
 		</RStyle>
 	    );
     }
 }
 
-export type MapType = {
+export type Map = {
     apiKey: string | null,
     center: {
 	lat: number,
 	lng: number
     },
+    featureRadius: number,
+    featureWidth: number,
+    geocoderLabel: string,
     geocoderPlatform: 'nominatim' | 'google',
     geocoderUrl: string,
     layers: any[],
+    layersLabel: string,
     noDefaultControls: boolean,
     renderer: FunctionComponent,
     routerUrl: string,
     zoom: number,
     spotlightColor: string,
+    spotlightRadius: number,
     onClick: any,
     onCenter: any,
     maxZoom: number,
     minZoom: number,
-    osrmVersion: string
 }
 
-export const Map = (props: MapType) => {
+export const Map = (props: Map) => {
     return (
 	<GeocoderProvider>
 	    <MapComponent {...props} />
@@ -193,20 +204,24 @@ const MapComponent = ({
 	lat: 0,
 	lng: 0
     },
+    featureRadius,
+    featureWidth,
+    geocoderLabel,
     geocoderPlatform,
     geocoderUrl,
     layers = [],
+    layersLabel,
     noDefaultControls = true,
     renderer,
     routerUrl,
     zoom = 10,
-    spotlightColor = 'red',
+    spotlightColor,
+    spotlightRadius,
     onClick = null,
     onCenter = null,
-    maxZoom = 18,
-    minZoom = 10,
-    osrmVersion = 'v5'
-}: MapType
+    maxZoom,
+    minZoom,
+}: Map
 ) => {
     const toast = useToast();
     const [view, setView] = useState({
@@ -243,7 +258,8 @@ const MapComponent = ({
 	    {
 		name: layer.name,
 		visible: true,
-		color: layer.color,
+		fillColor: layer.fillColor,
+		strokeColor: layer.strokeColor,
 		icon: layer.icon,
 		type: layer.geojson.features[0].geometry.type
 	    }
@@ -251,14 +267,14 @@ const MapComponent = ({
     )));
     const layerToggles: ReactElement[] = useMemo(() => {
 	return Object.values(visibleLayers).map((
-	    {color, name}: any, // todo: better typing
+	    {fillColor, name}: any, // todo: better typing
 	    index: number
 	) => 
 	    <Checkbox
 		defaultChecked
-		iconColor={color}
+		iconColor={fillColor}
 		// @ts-ignore
-		style={{'--chakra-colors-blue-500': color}}
+		style={{'--chakra-colors-blue-500': fillColor}}
 		key={name}
 		onChange={(e) => {
 		    setVisibleLayers({
@@ -286,9 +302,12 @@ const MapComponent = ({
 	    >
 		{
 		    generateStyle({
-			color: layer.color,
+			fillColor: layer.fillColor,
+			strokeColor: layer.strokeColor,
 			type: layer.type,
 			icon: layer.icon,
+			radius: featureRadius,
+			width: featureWidth,
 			zoomPercentage
 		    })
 		}
@@ -318,81 +337,77 @@ const MapComponent = ({
 	    setZoomPercentage(newZoomPercentage);
 	}
     }, [view]);
-    return (
-	<HStack h='100%' alignItems='stretch'>
-	    <Box w={isDesktop ? '67%' : '100%'} h='100%'>
-		<HStack mb={4}>
-		    <Popover>
-			<PopoverTrigger>
-			    <Button
-				colorScheme='blue'
-				aria-label='menu'
-				leftIcon={<HamburgerIcon />}
-			    >
-				Layers
-			    </Button>
-			</PopoverTrigger>
-			<PopoverContent p='0'>
-			    <PopoverArrow />
-			    <PopoverCloseButton />
-			    <PopoverHeader>
-				Layers - click to toggle
-			    </PopoverHeader>
-			    <PopoverBody p={4}>
-				<VStack align='start'>
-				    {layerToggles}
-				</VStack>
-			    </PopoverBody>
-			</PopoverContent>
-		    </Popover>
-		    <GeocoderInput
-			placeholder='Go to address ...'
-		    onGeocode={(latlng: ILatLng | null, address: string) => {
-			    if(onCenter !== null){
-				onCenter({
-				    ...latlng,
-				    address
-				});
+
+    const layersButton = <Popover>
+	<PopoverTrigger>
+	    <IconButton
+		aria-label='menu'
+		colorScheme='blue'
+		icon={<HamburgerIcon />}>
+	    </IconButton>
+	</PopoverTrigger>
+	<PopoverContent p='0'>
+	    <PopoverArrow />
+	    <PopoverCloseButton />
+	    <PopoverBody p={4}>
+		<VStack align='start'>
+		    {layerToggles}
+		</VStack>
+	    </PopoverBody>
+	</PopoverContent>
+    </Popover>;
+
+    const geocoderInput = <GeocoderInput
+			      placeholder={geocoderLabel}
+			      onGeocode={(latlng: ILatLng | null, address: string) => {
+				  if(onCenter !== null){
+				      onCenter({
+					  ...latlng,
+					  address
+				      });
+				  }
+				  if(latlng !== null){
+				      const point = fromLonLat([latlng.lng, latlng.lat]);
+				      setView({
+					  center: point,
+					  zoom: view.zoom
+				      });
+				      // @ts-ignore
+				      setSpotlight!(new Point(point));
+				  }else{
+				      /////////
+				      toast({
+					  title: 'Address not found',
+					  description: "Please try another address",
+					  status: 'error',
+					  isClosable: true,
+					  position: 'top'
+				      })
+				  }
+			      }}/>;
+    const map = <RMap
+		    maxZoom={maxZoom}
+		    minZoom={minZoom}
+		    noDefaultControls={noDefaultControls}
+		    height='100%'
+		    width='100%'
+		    initial={view}
+		    view={[view, setView]}
+		    onClick={(event) => {
+			const features = event.map.getFeaturesAtPixel(
+			    event.pixel,
+			    {
+				hitTolerance: 10 * zoomPercentage
 			    }
-			    if(latlng !== null){
-				const point = fromLonLat([latlng.lng, latlng.lat]);
-				setView({
-				    center: point,
-				    zoom: view.zoom
-				});
-				// @ts-ignore
-				setSpotlight!(new Point(point));
-			    }else{
-				/////////
-				toast({
-				    title: 'Address not found',
-				    description: "Please try another address",
-				    status: 'error',
-				    isClosable: true,
-				    position: 'top'
+			);
+			if(features.length > 0){
+			    // todo: don't ignore
+			    // @ts-ignore
+			    setPopupData(features
+				.filter((feature) => {
+				    return (feature.getProperties()).id !== undefined;
 				})
-			    }
-			}}/>
-		</HStack>
-		<AspectRatio maxH='100%' ratio={1}>
-		    <RMap
-			maxZoom={maxZoom}
-			minZoom={minZoom}
-			noDefaultControls={noDefaultControls}
-			height='calc(100% - 56px)'
-			width='100%'
-			initial={view}
-			view={[view, setView]}
-			onClick={(event) => {
-			    const features = event.map.getFeaturesAtPixel(event.pixel);
-			    if(features.length > 0){
-				// todo: don't ignore
-				// @ts-ignore
-				setPopupData(features
-				    .filter((feature) => {
-					return (feature.getProperties()).id !== undefined;
-				    })
-				    .map((feature) => {
+				.map((feature) => {
 				    // @ts-ignore
 				    const coords: Coordinate = toLonLat(feature.getGeometry()?.getCoordinates());
 				    return {
@@ -402,70 +417,101 @@ const MapComponent = ({
 					    lng: coords[0]
 					}
 				    };
-				}));
-				// @ts-ignore
-				const lnglat = toLonLat(features[0].getGeometry()?.getCoordinates());
-				const newCenter = fromLonLat(lnglat);
+			    }));
+			    // @ts-ignore
+			    const lnglat = toLonLat(features[0].getGeometry()?.getCoordinates());
+			    const newCenter = fromLonLat(lnglat);
 
-				// todo: animate map
-				/*
-				event.map.getView().fit(features[0].getGeometry().getExtent(), {
-				    duration: 25,
-				    maxZoom: 15
+			    // todo: animate map
+			    /*
+			       event.map.getView().fit(features[0].getGeometry().getExtent(), {
+			       duration: 25,
+			       maxZoom: 15
+			       });
+			     */
+
+			    // @ts-ignore
+			    setSpotlight(new Point(newCenter));
+			    if(onClick !== null){
+				onClick({
+				    lng: lnglat[0],
+				    lat: lnglat[1]
 				});
-				 */
-
-				// @ts-ignore
-				setSpotlight(new Point(newCenter));
-				if(onClick !== null){
-				    onClick({
-					lng: lnglat[0],
-					lat: lnglat[1]
-				    });
-				}
-				openModal();
 			    }
-			}}>
-			<RLayerTile
-			projection='EPSG:3857'
-			url='https://stamen-tiles.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png'
-			/>
-			{layersRendered}
-			<RLayerVector>
-			    {generateStyle({
-				color: 'red',
-				type: 'EmptyCircle',
-				width: 4,
-				zoomPercentage
-			    })}
-			    <RFeature geometry={spotlight} />
-			</RLayerVector>
-		    </RMap>
-		</AspectRatio>
-	    </Box>
-	    {isDesktop &&
-	     <Box w='33%' h='100%' p={4}>
-		 <Renderer data={popupData} key={JSON.stringify(popupData)} PageRenderer={renderer}/>
-	     </Box>
-	    }
-	    {
-		!isDesktop &&
-		<>
-		    <Modal isOpen={isModalOpen} onClose={closeModal}>
-			<ModalOverlay />
-			<ModalContent>
-			    <ModalHeader />
-			    <ModalCloseButton />
-			    <ModalBody>
-				<Renderer data={popupData} key={JSON.stringify(popupData)} PageRenderer={renderer} />
-			    </ModalBody>
-			    <ModalFooter />
-			</ModalContent>
-		    </Modal>
-		</>
-	    }
-	</HStack>
-    );
+			    openModal();
+			}
+		    }}>
+	<ROSM />
+	{layersRendered}
+	<RLayerVector>
+	    {generateStyle({
+		strokeColor: spotlightColor,
+		type: 'Spotlight',
+		radius: spotlightRadius,
+		zoomPercentage
+	    })}
+	    <RFeature geometry={spotlight} />
+	</RLayerVector>
+    </RMap>;
+
+    if(isDesktop){
+	return <>
+	    <HStack h='100%' alignItems='stretch'>
+		<Box w='67%' h='100%'>
+		    {map}
+		</Box>
+		<Box w='33%' h='100%' pl={4}>
+		    <Box pb='8'>
+			<Accordion defaultIndex={[0]} allowMultiple>
+			    <AccordionItem>
+				<h2>
+				    <AccordionButton>
+					<Box as="span" flex='1' textAlign='left'>
+					    {layersLabel}
+					</Box>
+					<AccordionIcon />
+				    </AccordionButton>
+				</h2>
+				<AccordionPanel>
+				    <VStack align='start'>
+					{layerToggles}
+				    </VStack>
+				</AccordionPanel>
+			    </AccordionItem>
+			</Accordion>
+			<Box pt='4'>
+			    {geocoderInput}
+			</Box>
+		    </Box>
+		    <Renderer data={popupData} key={JSON.stringify(popupData)} PageRenderer={renderer}/>		    
+		</Box>
+	    </HStack>
+	</>
+    }else{
+	return <>
+	    <VStack h='100%'>
+	    	<HStack w='100%'>
+		    {layersButton}
+		    {geocoderInput}
+		</HStack>
+		<Box w='100%' h='100%'>
+		    {map}
+		</Box>
+	    </VStack>
+	    <Modal isOpen={isModalOpen} onClose={closeModal}>
+		<ModalOverlay />
+		<ModalContent>
+		    <ModalHeader />
+		    <ModalCloseButton />
+		    <ModalBody>
+			<Renderer data={popupData} key={JSON.stringify(popupData)} PageRenderer={renderer} />
+		    </ModalBody>
+		    <ModalFooter />
+		</ModalContent>
+	    </Modal>
+	</>
+    }
+
 }
 
 const Renderer = ({
@@ -491,20 +537,22 @@ const Renderer = ({
 		     <>
 			 <IconButton
 			     aria-label='previous page'
-			     size='xs'
+			     colorScheme='green'
 			     icon={<ChevronLeftIcon />}
 			     isDisabled={page === 0}
 			     onClick={() => {setPage(page - 1);}}
+			     size='xs'
 			 />
 			 <Text ml='4' mr='4'>
 			     {page + 1} of {data.length}
 			 </Text>
 			 <IconButton
 			     aria-label='next page'
-			     size='xs'
+			     colorScheme='green'
 			     icon={<ChevronRightIcon />}
 			     isDisabled={page === data.length - 1}
 			     onClick={() => {setPage(page + 1);}}
+			     size='xs'
 			 />
 		     </>
 		    }

@@ -14,13 +14,13 @@
     "files": [
         "dist"
     ],
-    "main": "./dist/frg.umd.js",
-    "module": "./dist/frg.es.js",
+    "main": "./dist/frg-react.umd.js",
+    "module": "./dist/frg-react.es.js",
     "exports": {
         ".": {
     "types": "./dist/index.d.ts",
-            "import": "./dist/frg.es.js",
-            "require": "./dist/frg.umd.js"
+            "import": "./dist/frg-react.es.js",
+            "require": "./dist/frg-react.umd.js"
         }
     },
     "dependencies": {

@@ -9,7 +9,7 @@ import {
     ComponentMeta
 } from '@storybook/react';
 import {
-    Map as Map
+    Map
 } from './Map';
 import {
     Button,
@@ -29,7 +29,6 @@ import {
     Spacer,
     Text,
     extendTheme,
-    useClipboard,
     useDisclosure
 } from '@chakra-ui/react';
 import {
@@ -122,7 +121,7 @@ ${data.address}
 ${data.city}, ${data.state} ${data.zipcode}  
 [get directions](https://www.google.com/maps/dir/${data.lat},${data.lng}//@${data.lat},${data.lng},18.5z?entry=ttu)
 ${data.website ? '\nvisit the [website](' + data.website + ')' :''}
-${data.hours && data.hours.trim() !== '&' && true ? '\n\n**Hours of Operation**\n' + data.hours.trim().split('\n').map((hour: string) => `- ${hour}`).join('\n') : ''}
+${data.hours && data.hours.trim() !== '' ? '\n\n**Hours of Operation**\n' + data.hours.trim().split('\n').map((hour: string) => `- ${hour}`).join('\n') : ''}
 ${data.notes && data.notes.trim() !== '' ? '\n\n**Notes**  \n' + data.notes : ''}
 ${data.trackedBy && data.trackedBy.includes('Plentiful') ? '\n  \nBook an appointment on [plentiful](https://plentifulapp.com/)' : ''}
 `
@@ -130,12 +129,6 @@ ${data.trackedBy && data.trackedBy.includes('Plentiful') ? '\n  \nBook an appoin
 }
 
 const Renderer = ({data}: any) => {
-    const {onCopy, value: clipboardValue, setValue: setClipboardValue, hasCopied} = useClipboard("");
-    useEffect(() => {
-	if(data !== null){
-	    setClipboardValue(formatData(data));
-	}
-    }, [JSON.stringify(data)]);
     if(data === null){
 	return (
 	    <>
@@ -147,30 +140,22 @@ const Renderer = ({data}: any) => {
 	);
     }else{
 	return (
-	    <>
-		<Button
-		    isDisabled={hasCopied}
-		    onClick={onCopy}
-		    color='blue'
-		    size='xs'
-		>
-		    {hasCopied ? 'copied!' : 'copy'}
-		</Button>
-		<ReactMarkdown linkTarget='_blank' components={ChakraUIRenderer()} children={formatData(data)} skipHtml />
-	    </>
+	    <ReactMarkdown linkTarget='_blank' components={ChakraUIRenderer()} children={formatData(data)} skipHtml />
 	);
     }
 }
 
 const Template: ComponentStory<typeof Map> = (args) =>
     <ChakraProvider theme={theme}>
+	<Box h='100%' width='100%'>
 	<Map
 	{...args}
 	    layers={[
 		{
 		    name: 'Community Partner Distributions',
 		    geojson: cpds,
-		    color: '#23B0F0',
+		    fillColor: '#23B0F0',
+		    strokeColor: 'white',
 		    icon: {
 			src: cpd_truck,
 			scale: 0.6
@@ -179,7 +164,8 @@ const Template: ComponentStory<typeof Map> = (args) =>
 		{
 		    name: 'Mobile Markets',
 		    geojson: mms,
-		    color: '#388e3d',
+		    fillColor: '#388e3d',
+		    strokeColor: 'white',
 		    icon: {
 			src: mm_truck,
 			scale: 0.6
@@ -188,23 +174,27 @@ const Template: ComponentStory<typeof Map> = (args) =>
 		{
 		    name: 'Food Pantries',
 		    geojson: food_pantries,
-		    color: '#64A70B'
+		    fillColor: '#64A70B',
+		    strokeColor: 'white'
 		},
 		{
 		    name: 'Soup Kitchens',
 		    geojson: soup_kitchens,
-			color: '#FFD100'
+		    fillColor: '#FFD100',
+		    strokeColor: '2hite'
 		}
 	    ]}
 	center={{
 	    lat: 40.7127281,
 	    lng: -74.0060152
 	}}
-	renderer={Renderer}
+	noDefaultControls={false}
 	onClick={() => {}}
 	onCenter={() => {}}
+	renderer={Renderer}
 	routerUrl='http://router.project-osrm.org'
 	/>
+	</Box>
     </ChakraProvider>
 ;
 
@@ -212,7 +202,9 @@ export const Primary = Template.bind({});
 
 Primary.args = {
     geocoderPlatform: 'nominatim',
-    geocoderUrl: 'https://nominatim.openstreetmap.org/search'
+    geocoderUrl: 'https://nominatim.openstreetmap.org/search',
+    spotlightColor: 'red',
+    spotlightRadius: 16
 };
 
 export const GoogleGeocoder = Template.bind({});

@@ -1,5 +1,5 @@
 import {
-    Button
+    IconButton
 } from '@chakra-ui/react';
 import {InputComponent} from '../InputComponent/InputComponent';
 import {
@@ -12,6 +12,7 @@ import {
 } from 'react';
 import {useGeocoder} from './useGeocoder';
 import GoogleGeocoder from 'react-geocode';
+import {Search2Icon} from '@chakra-ui/icons';
 
 import ILatLng from './interfaces/latlng';
 import INominatimSearchResult from './interfaces/nominatimsearchresult';
@@ -23,6 +24,7 @@ type TGeocoderInput = {
 const geocodeNominatim = async (data: TGeocoderInput, url: string | null): Promise<ILatLng | null> => {
     const geocoderResponse = await fetch(`${url}?q=${data.address}&limit=1&format=json`);
     const geocoderJson: INominatimSearchResult[] = await geocoderResponse.json();
+    console.log(geocoderJson);
     if(geocoderJson.length > 0){
 	return {
 	    lat: parseFloat(geocoderJson[0].lat),
@@ -103,12 +105,12 @@ export const GeocoderInput = ({
 		placeholder={placeholder}
 		type='text'
 		rightElement={
-		    <Button
+		    <IconButton
+			aria-label='search for address'
 			colorScheme='green'
+			icon={<Search2Icon/>}
 			isLoading={loading}
-			type='submit'>
-			Go
-		    </Button>
+			type='submit' />
 		}
 	    />
 	</form>

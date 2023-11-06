@@ -26,16 +26,10 @@ export default defineConfig({
 	     */
 	    entry: path.resolve(__dirname, 'src/index.tsx'),
 	    name: 'frg-react',
-	    formats: ['es'],
-	    fileName: 'frg-react.es'
+	    formats: ['es', 'umd'],
+	    fileName: (format) => `frg-react.${format}.js`
 	},
 	rollupOptions: {
-	    /*
-	    external: [
-		'react',
-		'react-dom',
-	    ],
-	     */
 	    external: Object.keys(peerDependencies),
 	    output: {
 		globals: {
